@@ -442,6 +442,10 @@ public class FormatConfiguration {
 				return MP3;
 			}
 
+			if (supportSpec.match(FLAC, null, null)) {
+				return FLAC;
+			}
+			
 			// FIXME LPCM?
 		}
 

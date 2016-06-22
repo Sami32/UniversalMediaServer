@@ -205,6 +205,9 @@ public class FFmpegAudio extends FFMpegVideo {
 			cmdList.add("mp3");
 			cmdList.add("-ab");
 			cmdList.add("320000");
+		if (params.mediaRenderer.isTranscodeToFLAC()) {
+			cmdList.add("-f");
+			cmdList.add("flac");
 		} else if (params.mediaRenderer.isTranscodeToWAV()) {
 			cmdList.add("-f");
 			cmdList.add("wav");

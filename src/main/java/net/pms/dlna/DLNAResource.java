@@ -2539,6 +2539,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 							transcodedExtension = "_transcoded_to.mp3";
 						} else if (mediaRenderer.isTranscodeToWAV()) {
 							transcodedExtension = "_transcoded_to.wav";
+						} else if (mediaRenderer.isTranscodeToFLAC()) {
+							transcodedExtension = "_transcoded_to.flac";	
 						} else {
 							transcodedExtension = "_transcoded_to.pcm";
 						}
