@@ -1481,8 +1481,22 @@ public class DLNAMediaInfo implements Cloneable {
 				case "avi":
 					mimeType = HTTPResource.AVI_TYPEMIME;
 					break;
-				case "asf":
-				case "wmv":
+				case FormatConfiguration.ASF:
+					mimeType = HTTPResource.ASF_TYPEMIME;
+					break;
+				case FormatConfiguration.FLV:
+					mimeType = HTTPResource.FLV_TYPEMIME;
+					break;
+				case FormatConfiguration.MP4:
+					mimeType = HTTPResource.MP4_TYPEMIME;
+					break;
+				case FormatConfiguration.MPEGPS:
+					mimeType = HTTPResource.MPEG_TYPEMIME;
+					break;
+				case FormatConfiguration.MPEGTS:
+					mimeType = HTTPResource.MPEGTS_TYPEMIME;
+					break;
+				case FormatConfiguration.WMV:
 					mimeType = HTTPResource.WMV_TYPEMIME;
 					break;
 				case "mov":
@@ -1592,10 +1606,6 @@ public class DLNAMediaInfo implements Cloneable {
 					mimeType = HTTPResource.TIFF_TYPEMIME;
 				} else if ("bmp".equals(codecV) || "bmp".equals(container)) {
 					mimeType = HTTPResource.BMP_TYPEMIME;
-				} else if (codecV.startsWith("h264") || codecV.equals("h263") || codecV.equals("mpeg4") || codecV.equals("mp4")) {
-					mimeType = HTTPResource.MP4_TYPEMIME;
-				} else if (codecV.contains("mpeg") || codecV.contains("mpg")) {
-					mimeType = HTTPResource.MPEG_TYPEMIME;
 				}
 			} else if (codecV == null && codecA != null) {
 				if ("ogg".equals(container) || "oga".equals(container)) {

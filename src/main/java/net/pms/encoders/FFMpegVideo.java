@@ -378,17 +378,35 @@ public class FFMpegVideo extends Player {
 			if (renderer.isTranscodeToH264() || renderer.isTranscodeToH265()) {
 				if (!customFFmpegOptions.contains("-c:v")) {
 					transcodeOptions.add("-c:v");
-					if (renderer.isTranscodeToH264()) {
+					if (renderer.isTranscodeToMP4() && renderer.isTranscodeToH264()) {
+						transcodeOptions.add("libx264");
+//						transcodeOptions.add("-x264-params");
+//						transcodeOptions.add("bframes=0:force-cfr=1");
+					} else if (renderer.isTranscodeToH264()) {
 						transcodeOptions.add("libx264");
 					} else {
 						transcodeOptions.add("libx265");
 					}
 					transcodeOptions.add("-tune");
-					transcodeOptions.add("zerolatency");
+					if (media.isH265()) {
+						transcodeOptions.add("fastdecode");
+					} else {
+						transcodeOptions.add("zerolatency");
+					}
 				}
-				if (!customFFmpegOptions.contains("-preset")) {
-					transcodeOptions.add("-preset");
-					transcodeOptions.add("ultrafast");
+				if (!customFFmpegOptions.contains("preset")) {
+					if (!customFFmpegOptions.contains("-preset")) {
+						transcodeOptions.add("-preset");
+						transcodeOptions.add("ultrafast");
+					}
+					if (!customFFmpegOptions.contains("-level")) {
+						transcodeOptions.add("-level");
+						if (!renderer.isTranscodeToMKV() && !renderer.isTranscodeToH265()) {
+							transcodeOptions.add("31");
+						} else {
+							transcodeOptions.add("40");
+						}
+					}
 				}
 				if (!customFFmpegOptions.contains("-level")) {
 					transcodeOptions.add("-level");
@@ -406,6 +424,12 @@ public class FFMpegVideo extends Player {
 				transcodeOptions.add("-f");
 				if (dtsRemux) {
 					transcodeOptions.add("mpeg2video");
+				} else if (renderer.isTranscodeToMP4()) {
+					transcodeOptions.add("mp4");
+					transcodeOptions.add("-movflags");
+					transcodeOptions.add("frag_keyframe+default_base_moof");
+					transcodeOptions.add("-seekable");
+					transcodeOptions.add("1");
 				} else if (renderer.isTranscodeToMPEGTS()) {
 					transcodeOptions.add("mpegts");
 				} else {

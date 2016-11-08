@@ -443,7 +443,35 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		// TODO: Determine renderer's correct localization value
 		int localizationValue = 1;
 		String dlnaOrgPnFlags = getDlnaOrgPnFlags(mediaRenderer, localizationValue);
-		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + ";DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000";
+		if (
+			getRendererMimeType(mediaRenderer).equals(MATROSKA_TYPEMIME) &&
+			mediaRenderer.isTranscodeToMKV() &&
+			mediaRenderer.isDLNAOrgPNUsed() &&
+			mediaRenderer.isAccurateDLNAOrgPN() &&
+			(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())
+		) {
+			dlnaOrgPnFlags = "MATROSKA";
+//			dlnaOrgPsFlags = "DLNA.ORG_PS=2/3,-1,4"; // PlaySpeed.dlna.org should be implemented
+		}
+		if (
+			getRendererMimeType(mediaRenderer).equals(MP4_TYPEMIME) &&
+			mediaRenderer.isTranscodeToMP4() &&
+			mediaRenderer.isTranscodeToH264() &&
+			mediaRenderer.isDLNAOrgPNUsed() &&
+			mediaRenderer.isAccurateDLNAOrgPN()
+		) { // AVC_MP4_NDHD
+			if (mediaRenderer.isTranscodeToAAC()) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_EU";
+			}
+			if (mediaRenderer.isTranscodeToAC3()) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_EAC3";
+			}
+			if (mediaRenderer.isTranscodeToDTS()) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_DTS";
+			}
+		}
+
+		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + (dlnaOrgPsFlags != null ? (";" + dlnaOrgPsFlags) : "") + ";DLNA.ORG_CI=0;DLNA.ORG_FLAGS=ED100000000000000000000000000000";
 	}
 
 	public String getDlnaContentFeatures(DLNAImageProfile profile, boolean thumbnailRequest) {
@@ -1942,9 +1970,27 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				} else if (mime.equals(WMV_TYPEMIME) && media != null && media.getHeight() > 700) {
 					dlnaOrgPnFlags = "DLNA.ORG_PN=WMVHIGH_PRO";
 				}
-			} else {
+			} else if (mediaRenderer.isTranscodeToMP4() && mediaRenderer.isTranscodeToH264() && mime.equals(MP4_TYPEMIME)) { // AVC_MP4_NDHD
+				if (mediaRenderer.isTranscodeToAAC()) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_EU";
+				}
+				if (mediaRenderer.isTranscodeToAC3()) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_EAC3";
+				}
+				if (mediaRenderer.isTranscodeToDTS()) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_DTS";
+				}
+			} else if (mediaRenderer.isTranscodeToMKV() && mime.equals(MATROSKA_TYPEMIME) && (mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
+			} else if (!mediaRenderer.isTranscodeToMKV() && !mediaRenderer.isTranscodeToMP4()) {
 				if (mime.equals(MPEG_TYPEMIME)) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(localizationValue);
+					dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_PS_LocalizedValue(localizationValue);
+					if (mediaRenderer.isTranscodeToAC3() && "DLNA.ORG_PN=MPEG_PS_PAL".equals(dlnaOrgPnFlags)) {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_PAL_XAC3";
+					}
+					if (mediaRenderer.isTranscodeToAC3() && "DLNA.ORG_PN=MPEG_PS_NTSC".equals(dlnaOrgPnFlags)) {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_NTSC_XAC3";
+					}
 
 					if (player != null) {
 						// VLC Web Video (Legacy) and tsMuxeR always output MPEG-TS
@@ -2335,7 +2381,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				}
 			}
 
-			if (dlnaOrgPnFlags != null) {
+			if (dlnaOrgPnFlags != null && dlnaOrgPnFlags.length() > 12) {
 				dlnaOrgPnFlags = "DLNA.ORG_PN=" + mediaRenderer.getDLNAPN(dlnaOrgPnFlags.substring(12));
 			}
 		}
@@ -2641,6 +2687,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					if (media.isVideo()) {
 						if (mediaRenderer.isTranscodeToMPEGTS()) {
 							transcodedExtension = "_transcoded_to.ts";
+						} else if (mediaRenderer.isTranscodeToMP4()) {
+							transcodedExtension = "_transcoded_to.mp4";
 						} else if (mediaRenderer.isTranscodeToWMV() && !xbox360) {
 							transcodedExtension = "_transcoded_to.wmv";
 						} else {

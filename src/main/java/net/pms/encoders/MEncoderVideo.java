@@ -2637,6 +2637,11 @@ public class MEncoderVideo extends Player {
 		return definitiveArgs;
 	}
 
+	@Override
+	public boolean isPlayerCompatible(RendererConfiguration mediaRenderer) {
+		return mediaRenderer != null && !mediaRenderer.isTranscodeToMP4();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

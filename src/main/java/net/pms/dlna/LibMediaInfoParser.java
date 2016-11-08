@@ -477,6 +477,7 @@ public class LibMediaInfoParser {
 				value.startsWith("m4a") ||
 				value.startsWith("m4v") ||
 				value.equals("mpeg-4 visual") ||
+				value.equals("xavc") ||
 				value.equals("xvid")
 			) {
 				format = FormatConfiguration.MP4;

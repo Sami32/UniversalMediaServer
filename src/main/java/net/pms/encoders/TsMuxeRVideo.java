@@ -771,7 +771,7 @@ public class TsMuxeRVideo extends Player {
 
 	@Override
 	public boolean isPlayerCompatible(RendererConfiguration mediaRenderer) {
-		return mediaRenderer != null && mediaRenderer.isMuxH264MpegTS();
+		return mediaRenderer != null && mediaRenderer.isMuxH264MpegTS() && mediaRenderer.isTranscodeToMPEGTS();
 	}
 
 	/**
