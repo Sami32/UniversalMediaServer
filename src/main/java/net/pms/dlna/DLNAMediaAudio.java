@@ -251,16 +251,23 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	 * @return True if the audio codec is FLAC.
 	 */
 	public boolean isFLAC() {
-		return getCodecA() != null && getCodecA().startsWith("fla");
+		return FormatConfiguration.FLAC.equalsIgnoreCase(getCodecA());
+	}
+	
+	/**
+	 * @return True if the audio codec is FlashAudio.
+	 */
+	public boolean isFlashAudio() {
+		return FormatConfiguration.FlashAudio.equalsIgnoreCase(getCodecA());
 	}
 
 	/**
-	 * @return True if the audio codec is HE-AAC.
+	 * @return True if the audio codec is FLV.
 	 */
-	public boolean isHEAAC() {
-		return FormatConfiguration.AAC_HE.equalsIgnoreCase(getCodecA());
+	public boolean isFLV() {
+		return FormatConfiguration.FLV.equalsIgnoreCase(getCodecA());
 	}
-
+	
 	/**
 	 * @return True if the audio codec is Matroska Audio.
 	 */
@@ -318,6 +325,13 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	}
 
 	/**
+	 * @return True if the audio codec is QCELP.
+	 */
+	public boolean isQLCM() {
+		return FormatConfiguration.QLCM.equalsIgnoreCase(getCodecA());
+	}
+
+	/**
 	 * @return True if the audio codec is QDesign.
 	 */
 	public boolean isQDesign() {
@@ -336,6 +350,13 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	 */
 	public boolean isShorten() {
 		return FormatConfiguration.SHORTEN.equalsIgnoreCase(getCodecA());
+	}
+	
+	/**
+	 * @return True if the audio codec is Speex.
+	 */
+	public boolean isSpeex() {
+		return FormatConfiguration.SPEEX.equalsIgnoreCase(getCodecA());
 	}
 
 	/**
@@ -430,7 +451,9 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 		if (is3GA()) {
 			return "3GA";
 		} else if (isAACLC()) {
-			return "AAC";
+			return "AAC-LC";
+		} else if (isAACHE()) {
+			return "HE-AAC";
 		} else if (isAC3()) {
 			return "AC3";
 		} else if (isADPCM()) {
@@ -455,8 +478,10 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 			return "Enhanced AC-3";
 		} else if (isFLAC()) {
 			return "FLAC";
-		} else if (isHEAAC()) {
-			return "HE-AAC";
+		} else if (isFlashAudio()) {
+			return "Flash Audio";
+		} else if (isFLV()) {
+			return "FLV";
 		} else if (isMKA()) {
 			return "Matroska Audio";
 		} else if (isMLP()) {
@@ -473,6 +498,8 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 			return "Opus";
 		} else if (isPCM()) {
 			return "LPCM";
+		} else if (isQLCM()) {
+			return "QCELP";
 		} else if (isQDesign()) {
 			return "QDesign";
 		} else if (isRALF()) {

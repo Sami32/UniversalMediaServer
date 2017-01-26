@@ -971,5 +971,41 @@ public class FormatConfigurationRegressionTest0 {
     org.junit.Assert.assertTrue("'" + str0 + "' != '" + "aiff"+ "'", str0.equals("aiff"));
 
   }
+  
+  @Test
+  public void test81() throws Throwable {
+
+    if (debug) { System.out.format("%n%s%n","RegressionTest0.test81"); }
+
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.EVRC;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "evrc"+ "'", str0.equals("evrc"));
+
+  }
+  
+  @Test
+  public void test82() throws Throwable {
+
+    if (debug) { System.out.format("%n%s%n","RegressionTest0.test82"); }
+
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.QLCM;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "qcelp"+ "'", str0.equals("qcelp"));
+
+  }
+  
+  @Test
+  public void test83() throws Throwable {
+
+    if (debug) { System.out.format("%n%s%n","RegressionTest0.test83"); }
+
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.FlashAudio;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "f4a"+ "'", str0.equals("f4a"));
+
+  }
 
 }

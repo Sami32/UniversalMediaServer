@@ -96,6 +96,7 @@ public class FormatFactoryTest {
 		testSingleFormat("test.msa", "ATRAC", Format.AUDIO);
 		testSingleFormat("test.oma", "ATRAC", Format.AUDIO);
 		testSingleFormat("test.omg", "ATRAC", Format.AUDIO);
+		testSingleFormat("test.qcp", "QCELP", Format.AUDIO);
 		testSingleFormat("test.au", "AU", Format.AUDIO);
 		testSingleFormat("test.snd", "AU", Format.AUDIO);
 		testSingleFormat("test.dff", "DSDAudio", Format.AUDIO);
@@ -105,6 +106,11 @@ public class FormatFactoryTest {
 		testSingleFormat("test.eac3", "EAC3", Format.AUDIO);
 		testSingleFormat("test.fla", "FLAC", Format.AUDIO);
 		testSingleFormat("test.flac", "FLAC", Format.AUDIO);
+		testSingleFormat("test.f4a", "FlashAudio", Format.AUDIO);
+		testSingleFormat("test.f4b", "FlashAudio", Format.AUDIO);
+		testSingleFormat("test.f4p", "FLV", Format.VIDEO);
+		testSingleFormat("test.f4v", "FLV", Format.VIDEO);
+		testSingleFormat("test.flv", "FLV", Format.VIDEO);
 		testSingleFormat("test.gif", "GIF", Format.IMAGE);
 		testSingleFormat("test.idx", "IDX", Format.SUBTITLE);
 		testSingleFormat("test.img", "ISO", Format.ISO);
@@ -114,6 +120,8 @@ public class FormatFactoryTest {
 		testSingleFormat("test.jpg", "JPG", Format.IMAGE);
 		testSingleFormat("test.mpo", "JPG", Format.IMAGE);
 		testSingleFormat("test.m4a", "M4A", Format.AUDIO);
+		testSingleFormat("test.m4b", "M4A", Format.AUDIO);
+		testSingleFormat("test.m4r", "M4A", Format.AUDIO);
 		testSingleFormat("test.3g2", "MKV", Format.VIDEO);
 		testSingleFormat("test.3gp", "MKV", Format.VIDEO);
 		testSingleFormat("test.3gp2", "MKV", Format.VIDEO);
@@ -121,7 +129,6 @@ public class FormatFactoryTest {
 		testSingleFormat("test.asx", "MKV", Format.VIDEO);
 		testSingleFormat("test.dv", "MKV", Format.VIDEO);
 		testSingleFormat("test.evo", "MKV", Format.VIDEO);
-		testSingleFormat("test.flv", "MKV", Format.VIDEO);
 		testSingleFormat("test.hdmov", "MKV", Format.VIDEO);
 		testSingleFormat("test.hdm", "MKV", Format.VIDEO);
 		testSingleFormat("test.m2v", "MKV", Format.VIDEO);
@@ -144,9 +151,9 @@ public class FormatFactoryTest {
 		testSingleFormat("test.avi", "MPG", Format.VIDEO);
 		testSingleFormat("test.div", "MPG", Format.VIDEO);
 		testSingleFormat("test.divx", "MPG", Format.VIDEO);
-		testSingleFormat("test.m2p", "MPG", Format.VIDEO);
 		testSingleFormat("test.m2t", "MPG", Format.VIDEO);
 		testSingleFormat("test.m2ts", "MPG", Format.VIDEO);
+		testSingleFormat("test.m4p", "MPG", Format.VIDEO);
 		testSingleFormat("test.m4v", "MPG", Format.VIDEO);
 		testSingleFormat("test.mod", "MPG", Format.VIDEO);
 		testSingleFormat("test.mp4", "MPG", Format.VIDEO);
