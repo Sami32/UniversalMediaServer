@@ -426,7 +426,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		// TODO: Determine renderer's correct localization value
 		int localizationValue = 1;
 		String dlnaOrgPnFlags = getDlnaOrgPnFlags(mediaRenderer, localizationValue);
-		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=ED100000000000000000000000000000";
 	}
 
 	public DLNAResource getPrimaryResource() {
