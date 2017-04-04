@@ -175,7 +175,7 @@ public class FormatRecognitionTest {
 	 * Playstation 3 renderer.
 	 */
 	@Test
-	public void testPS3Compatibility() {
+	public void testBackwardsCompatibility() {
     	// This test is only useful if the MediaInfo library is available
 		assumeTrue(mediaInfoParserIsValid);
 
