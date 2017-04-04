@@ -28,9 +28,9 @@ public class ISO extends MPG {
 		return Identifier.ISO;
 	}
 
-	public ISO() {
-		type = ISO;
-	}
+//	public ISO() {
+//		type = ISO;
+//	}
 
 	/**
 	 * {@inheritDoc}
