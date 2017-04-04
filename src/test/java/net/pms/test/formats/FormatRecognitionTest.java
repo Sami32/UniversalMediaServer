@@ -190,11 +190,11 @@ public class FormatRecognitionTest {
 		assertFalse("isCompatible() gives the outcome false for DVRMS",	conf.isCompatible(info, format, configuration));
 
 		// ISO: false
-		info = new DLNAMediaInfo();
-		info.setContainer("iso");
-		format = new ISO();
-		format.match("test.iso");
-		assertFalse("isCompatible() gives the outcome false for ISO", conf.isCompatible(info, format, configuration));
+//		info = new DLNAMediaInfo();
+//		info.setContainer("iso");
+//		format = new ISO();
+//		format.match("test.iso");
+//		assertFalse("isCompatible() gives the outcome false for ISO", conf.isCompatible(info, format, configuration));
 
 		// M4A: false
 		info = new DLNAMediaInfo();
