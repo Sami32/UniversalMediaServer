@@ -801,7 +801,7 @@ public class FFMpegVideo extends Player {
 		// Decoder threads
 		if (nThreads > 0) {
 			cmdList.add("-threads");
-			cmdList.add(String.valueOf(nThreads));
+			cmdList.add("auto");
 		}
 
 		final boolean isTsMuxeRVideoEngineEnabled = configuration.getEnginesAsList(PMS.get().getRegistry()).contains(TsMuxeRVideo.ID);
@@ -967,7 +967,7 @@ public class FFMpegVideo extends Player {
 		// Encoder threads
 		if (nThreads > 0) {
 			cmdList.add("-threads");
-			cmdList.add(String.valueOf(nThreads));
+			cmdList.add("auto");
 		}
 
 		if (params.timeend > 0) {
