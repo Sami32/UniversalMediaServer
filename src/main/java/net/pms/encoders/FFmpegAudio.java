@@ -180,7 +180,7 @@ public class FFmpegAudio extends FFMpegVideo {
 		// Decoder threads
 		if (nThreads > 0) {
 			cmdList.add("-threads");
-			cmdList.add("" + nThreads);
+			cmdList.add("auto");
 		}
 
 		cmdList.add("-i");
@@ -192,7 +192,7 @@ public class FFmpegAudio extends FFMpegVideo {
 		// Encoder threads
 		if (nThreads > 0) {
 			cmdList.add("-threads");
-			cmdList.add("" + nThreads);
+			cmdList.add("auto");
 		}
 
 		if (params.timeend > 0) {
