@@ -926,8 +926,10 @@ public class DLNAMediaInfo implements Cloneable {
 					if (StringUtils.isBlank(container) && ext != null) {
 						if (ext.getIdentifier() == Identifier.ADPCM) {
 							audio.setCodecA(FormatConfiguration.ADPCM);
-						} else if (ext.getIdentifier() == Identifier.DSD) {
-							audio.setCodecA(FormatConfiguration.DSD);
+						} else if (ext.getIdentifier() == Identifier.DSF) {
+							audio.setCodecA(FormatConfiguration.DSF);
+						} else if (ext.getIdentifier() == Identifier.DFF) {
+							audio.setCodecA(FormatConfiguration.DFF);
 						}
 					}
 
@@ -1503,8 +1505,11 @@ public class DLNAMediaInfo implements Cloneable {
 				case FormatConfiguration.AU:
 					mimeType = HTTPResource.AUDIO_AU_TYPEMIME;
 					break;
-				case FormatConfiguration.DSD:
-					mimeType = HTTPResource.AUDIO_DSD_TYPEMIME;
+				case FormatConfiguration.DFF:
+					mimeType = HTTPResource.AUDIO_DFF_TYPEMIME;
+					break;
+				case FormatConfiguration.DSF:
+					mimeType = HTTPResource.AUDIO_DSF_TYPEMIME;
 					break;
 				case FormatConfiguration.EAC3:
 					mimeType = HTTPResource.AUDIO_EAC3_TYPEMIME;
@@ -1634,8 +1639,10 @@ public class DLNAMediaInfo implements Cloneable {
 					mimeType = HTTPResource.AUDIO_EAC3_TYPEMIME;
 				} else if (codecA.equals(FormatConfiguration.ADPCM)) {
 					mimeType = HTTPResource.AUDIO_ADPCM_TYPEMIME;
-				} else if (codecA.equals(FormatConfiguration.DSD)) {
-					mimeType = HTTPResource.AUDIO_DSD_TYPEMIME;
+				} else if (codecA.equals(FormatConfiguration.DFF)) {
+					mimeType = HTTPResource.AUDIO_DFF_TYPEMIME;
+				} else if (codecA.equals(FormatConfiguration.DSF)) {
+					mimeType = HTTPResource.AUDIO_DSF_TYPEMIME;
 				}
 			}
 
