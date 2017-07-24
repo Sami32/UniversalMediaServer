@@ -380,12 +380,12 @@ public class FormatConfiguration {
 					String value = extras.get(key).toLowerCase();
 
 					if (key.equals(MI_QPEL) && miExtras.get(MI_QPEL) != null && !miExtras.get(MI_QPEL).matcher(value).matches()) {
-						LOGGER.trace("Qpel value \"{}\" failed to match support line {}", miExtras.get(MI_QPEL), supportLine);
+						LOGGER.trace("QPel value \"{}\" failed to match support line {}", miExtras.get(MI_QPEL), supportLine);
 						return false;
 					}
 
 					if (key.equals(MI_GMC) && miExtras.get(MI_GMC) != null && !miExtras.get(MI_GMC).matcher(value).matches()) {
-						LOGGER.trace("Gmc value \"{}\" failed to match support line {}", miExtras.get(MI_GMC), supportLine);
+						LOGGER.trace("GMC value \"{}\" failed to match support line {}", miExtras.get(MI_GMC), supportLine);
 						return false;
 					}
 
