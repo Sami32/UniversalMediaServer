@@ -1415,6 +1415,96 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	/**
+	 * Whether the file contains H.265 (HEVC) video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isH265() {
+		return codecV != null && codecV.equals("h265");
+	}
+
+	/**
+	 * Whether the file contains VP8 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isVP8() {
+		return codecV != null && codecV.equals("vp8");
+	}
+
+	/**
+	 * Whether the file contains VC-1 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isVC1() {
+		return codecV != null && codecV.equals("vc1");
+	}
+
+	/**
+	 * Whether the file contains VP9 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isVP9() {
+		return codecV != null && codecV.equals("vp9");
+	}
+
+	/**
+	 * Whether the file contains MJPEG video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isMJPEG() {
+		return codecV != null && codecV.equals("mjpeg");
+	}
+
+	/**
+	 * Whether the file contains MPEG-1 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isMPEG1() {
+		return codecV != null && codecV.equals("mpeg1");
+	}
+
+	/**
+	 * Whether the file contains MPEG-2 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isMPEG2() {
+		return codecV != null && codecV.equals("mpeg2");
+	}
+
+	/**
+	 * Whether the file contains MPEG-4 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isMPEG4() { // To be implemented
+		return codecV != null && codecV.equals("mpeg4");
+	}
+
+	/**
+	 * Whether the file contains H263 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isH263() {
+		return codecV != null && codecV.equals("h263");
+	}
+
+	/**
+	 * Whether the file contains H263 video.
+	 *
+	 * @return {boolean}
+	 */
+	public boolean isWMV3() { // To be implemented
+		return codecV != null && codecV.equals("wmv3");
+	}
+
+	/**
 	 * Disable LPCM transcoding for MP4 container with non-H264 video as workaround for MEncoder's A/V sync bug
 	 */
 	public boolean isValidForLPCMTranscoding() {
@@ -1985,8 +2075,41 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	public int getRealVideoBitrate() {
+		if (bitrate > 200000000) {
+			return (25000000);
+		}
 		if (bitrate > 0) {
-			return (bitrate / 8);
+			if (cbr_video_bitrate > 0) {
+				if ((cbr_video_bitrate * 1000) > (bitrate / 8)) {
+					return (bitrate / 8);
+				} else {
+					return (cbr_video_bitrate * 1000);
+				}
+			} else if (max_video_bitrate > 0 ) {
+				if ((max_video_bitrate * 1000000) > (bitrate / 8)) {
+					return (bitrate / 8);
+				} else {
+					return (max_video_bitrate * 1000000);
+				}
+			} else if (is4KVideo()) {
+				if ((bitrate / 8) < 50000000) {
+					return (bitrate / 8);
+				} else {
+					return 50000000;
+				}
+			} else if (isHDVideo()) {
+				if ((bitrate / 8) < 20000000) {
+					return (bitrate / 8);
+				} else {
+					return 20000000;
+				}
+			} else {
+				if ((bitrate / 8) < 20000000) {
+					return (bitrate / 8);
+				} else {
+					return 20000000;
+				}
+			}
 		}
 
 		int realBitrate = 10000000;
@@ -2000,6 +2123,10 @@ public class DLNAMediaInfo implements Cloneable {
 
 	public boolean isHDVideo() {
 		return (width > 864 || height > 576);
+	}
+
+	public boolean is4KVideo() {
+		return (width > 1920 || height > 1088);
 	}
 
 	public boolean isMpegTS() {

@@ -362,8 +362,12 @@ public class VLCVideo extends Player {
 				}
 				bufSize = defaultMaxBitrates[0];
 			} else {
-				if (media.isHDVideo()) {
+				if (media.isHDVideo() && !media.is4KVideo()) {
 					bufSize = defaultMaxBitrates[0] / 3;
+				}
+
+				if (media.is4KVideo()) {
+					bufSize = defaultMaxBitrates[0] / 12;
 				}
 
 				if (bufSize > 7000) {
@@ -441,6 +445,8 @@ public class VLCVideo extends Player {
 				// Lower CRF for 720p+ content
 				if (media.getWidth() > 720) {
 					x264CRF = "19";
+				} else if (media.getWidth() > 1920) {
+					x264CRF = "22";
 				}
 			}
 			videoBitrateOptions.add("--sout-x264-crf");

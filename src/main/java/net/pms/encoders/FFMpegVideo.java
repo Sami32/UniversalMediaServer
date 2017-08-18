@@ -535,8 +535,12 @@ public class FFMpegVideo extends Player {
 				}
 				bufSize = defaultMaxBitrates[0];
 			} else {
-				if (media.isHDVideo()) {
+				if (media.isHDVideo() && !media.is4KVideo()) {
 					bufSize = defaultMaxBitrates[0] / 3;
+				}
+
+				if (media.is4KVideo()) {
+					bufSize = defaultMaxBitrates[0] / 12;
 				}
 
 				if (bufSize > 7000) {
@@ -624,7 +628,9 @@ public class FFMpegVideo extends Player {
 				if (x264CRF.contains("Wireless") || maximumBitrate < 70) {
 					x264CRF = "19";
 					// Lower quality for 720p+ content
-					if (media.getWidth() > 1280) {
+					if (media.getWidth() > 1920) {
+						x264CRF = "26";
+					} else if (media.getWidth() > 1280) {
 						x264CRF = "23";
 					} else if (media.getWidth() > 720) {
 						x264CRF = "22";
@@ -635,6 +641,8 @@ public class FFMpegVideo extends Player {
 					// Lower quality for 720p+ content
 					if (media.getWidth() > 720) {
 						x264CRF = "19";
+					} else if (media.getWidth() > 1920) {
+						x264CRF = "22";
 					}
 				}
 			}
@@ -777,6 +785,12 @@ public class FFMpegVideo extends Player {
 		return false;
 	}
 
+	public boolean isCPU4Kable() { // Should be automatic using OSHI or
+		return false;
+	}
+
+	private static final String videoDecoder = "cuvid"; // Should be automatic or set in the general configuration file
+
 	@Override
 	public synchronized ProcessWrapper launchTranscode(
 		DLNAResource dlna,
@@ -846,6 +860,46 @@ public class FFMpegVideo extends Player {
 		if (params.timeseek > 0) {
 			cmdList.add("-ss");
 			cmdList.add(String.valueOf(params.timeseek));
+		}
+
+		// Hardware acceleration
+		cmdList.add("-hwaccel");
+		cmdList.add("auto");
+		if (isCPU4Kable() && media.getVideoBitDepth() == 8 && media.getCodecV() != null) { // Used here only for testing purpose
+			if (media.isH264()) {
+				cmdList.add("-c:v");
+				cmdList.add("h264_" + videoDecoder);
+			} else if (media.isH265()) {
+				cmdList.add("-c:v");
+				cmdList.add("hevc_" + videoDecoder);
+			} else if (media.isVC1()) { // and below formats are usable with CUDA, CUVID and NvDecode
+				cmdList.add("-c:v");
+				cmdList.add("vc1_" + videoDecoder);
+			} else if (media.isVP8()) {
+				cmdList.add("-c:v");
+				cmdList.add("vp8_" + videoDecoder);
+			} else if (media.isVP9()) {
+				cmdList.add("-c:v");
+				cmdList.add("vp9_" + videoDecoder);
+			} else if (media.isMJPEG()) {
+				cmdList.add("-c:v");
+				cmdList.add("mjpeg_" + videoDecoder);
+			} else if (media.isMPEG1()) {
+				cmdList.add("-c:v");
+				cmdList.add("mpeg1_" + videoDecoder);
+			} else if (media.isMPEG2()) {
+				cmdList.add("-c:v");
+				cmdList.add("mpeg2_" + videoDecoder);
+			} else if (media.isMPEG4()) {
+				cmdList.add("-c:v");
+				cmdList.add("mpeg4_" + videoDecoder);
+			} else if (media.isH263()) {
+				cmdList.add("-c:v");
+				cmdList.add("h263_" + videoDecoder);
+			} else if (media.isWMV3()) {
+				cmdList.add("-c:v");
+				cmdList.add("wmv3_" + videoDecoder);
+			}
 		}
 
 		// Decoder threads

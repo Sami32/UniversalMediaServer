@@ -733,8 +733,12 @@ public class MEncoderVideo extends Player {
 				}
 				bufSize = defaultMaxBitrates[0];
 			} else {
-				if (media.isHDVideo()) {
+				if (media.isHDVideo() && !media.is4KVideo()) {
 					bufSize = defaultMaxBitrates[0] / 3;
+				}
+
+				if (media.is4KVideo()) {
+					bufSize = defaultMaxBitrates[0] / 12;
 				}
 
 				if (bufSize > 7000) {
@@ -1339,7 +1343,9 @@ public class MEncoderVideo extends Player {
 					if (x264CRF.contains("Wireless") || maximumBitrate < 70) {
 						x264CRF = "19";
 						// Lower quality for 720p+ content
-						if (media.getWidth() > 1280) {
+						if (media.getWidth() > 1920) {
+							x264CRF = "26";
+						} else if (media.getWidth() > 1280) {
 							x264CRF = "23";
 						} else if (media.getWidth() > 720) {
 							x264CRF = "22";
@@ -1350,6 +1356,8 @@ public class MEncoderVideo extends Player {
 						// Lower quality for 720p+ content
 						if (media.getWidth() > 720) {
 							x264CRF = "19";
+						} else if (media.getWidth() > 1920) {
+							x264CRF = "22";
 						}
 					}
 				}
