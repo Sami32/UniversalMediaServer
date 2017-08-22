@@ -51,25 +51,25 @@ public class LibMediaInfoParserTest {
 		assertThat(LibMediaInfoParser.getAvcProfile("hIgH@L4.1")).isEqualTo("high");
 		assertThat(LibMediaInfoParser.getAvcProfile("LOW@L4.1")).isEqualTo("low");
 	}
-	
+
 	@Test
 	public void testGetAvcProfileInvalidInput() throws Exception {
 		assertThat(LibMediaInfoParser.getAvcProfile("@L2.0")).isNull();
 		assertThat(LibMediaInfoParser.getAvcProfile("@l2.0")).isNull();
 	}
-	
+
 	@Test
 	public void testGetBitrate() throws Exception {
 		assertThat(LibMediaInfoParser.getBitrate("256")).isEqualTo(256);
 		assertThat(LibMediaInfoParser.getBitrate("128/192")).isEqualTo(128);
 	}
-	
+
 	@Test
 	public void testGetBitrateInvalidInput() throws Exception {
 		assertThat(LibMediaInfoParser.getBitrate("")).isEqualTo(0);
 		assertThat(LibMediaInfoParser.getBitrate("asfd")).isEqualTo(0);
 	}
-	
+
 	@Test
 	public void testGetSpecificID() throws Exception {
 		assertThat(LibMediaInfoParser.getSpecificID("256")).isEqualTo(256);

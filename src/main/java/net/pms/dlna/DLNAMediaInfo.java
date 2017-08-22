@@ -128,6 +128,7 @@ public class DLNAMediaInfo implements Cloneable {
 	 */
 	@Deprecated
 	public int bitrate;
+	public int videoBitrate;
 
 	/**
 	 * @deprecated Use standard getter and setter to access this variable.
@@ -158,12 +159,7 @@ public class DLNAMediaInfo implements Cloneable {
 	 */
 	@Deprecated
 	public String frameRate;
-
 	private String frameRateMode;
-
-	/**
-	 * The frame rate mode as read from the parser
-	 */
 	private String frameRateModeRaw;
 	private String frameRateOriginal;
 
@@ -172,10 +168,10 @@ public class DLNAMediaInfo implements Cloneable {
 	 */
 	@Deprecated
 	public String aspect;
-
 	public String aspectRatioDvdIso;
 	public String aspectRatioContainer;
 	public String aspectRatioVideoTrack;
+
 	private int videoBitDepth = 8;
 
 	private volatile DLNAThumbnail thumb = null;
@@ -1883,9 +1879,10 @@ public class DLNAMediaInfo implements Cloneable {
 		}
 		result.append("Size: ").append(getSize());
 		if (isVideo()) {
-			result.append(", Video Bitrate: ").append(getBitrate());
+			result.append(", Overall Bitrate: ").append(getBitrate());
 			result.append(", Video Tracks: ").append(getVideoTrackCount());
 			result.append(", Video Codec: ").append(getCodecV());
+			result.append(", Video Bitrate: ").append(getVideoBitrate());
 			result.append(", Duration: ").append(getDurationString());
 			result.append(", Video Resolution: ").append(getWidth()).append(" x ").append(getHeight());
 			if (isNotBlank(getFrameRate())) {
@@ -2074,41 +2071,37 @@ public class DLNAMediaInfo implements Cloneable {
 		return null;
 	}
 
-	public int getRealVideoBitrate() {
-		if (bitrate > 200000000) {
-			return (25000000);
+	public int getRealBitrate() {
+		int cbr_video_bitrate = 0;
+		int max_video_bitrate = 0;
+		int compliant_bitrate = bitrate;
+		if (videoBitrate > 0 && (videoBitrate > bitrate || bitrate > videoBitrate * 3)) {
+			compliant_bitrate = videoBitrate;
 		}
-		if (bitrate > 0) {
+
+		if (compliant_bitrate > 0) {
 			if (cbr_video_bitrate > 0) {
-				if ((cbr_video_bitrate * 1000) > (bitrate / 8)) {
-					return (bitrate / 8);
+				if (cbr_video_bitrate * 1000 > compliant_bitrate) {
+					return compliant_bitrate;
 				} else {
-					return (cbr_video_bitrate * 1000);
+					return cbr_video_bitrate * 1000;
 				}
 			} else if (max_video_bitrate > 0 ) {
-				if ((max_video_bitrate * 1000000) > (bitrate / 8)) {
-					return (bitrate / 8);
+				if (max_video_bitrate * 1000000 > compliant_bitrate) {
+					return compliant_bitrate;
 				} else {
-					return (max_video_bitrate * 1000000);
+					return max_video_bitrate * 1000000;
 				}
-			} else if (is4KVideo()) {
-				if ((bitrate / 8) < 50000000) {
-					return (bitrate / 8);
+			} else if (is4KVideo()) { // && (mediaRenderer.getMaxVideoWidth() > 1920 || mediaRenderer.getMaxVideoHeight() > 1088)) {
+				if (compliant_bitrate < 80000000) {
+					return compliant_bitrate;
 				} else {
-					return 50000000;
+					return 80000000;
 				}
-			} else if (isHDVideo()) {
-				if ((bitrate / 8) < 20000000) {
-					return (bitrate / 8);
-				} else {
-					return 20000000;
-				}
+			} else if (compliant_bitrate < 40000000) {
+				return compliant_bitrate;
 			} else {
-				if ((bitrate / 8) < 20000000) {
-					return (bitrate / 8);
-				} else {
-					return 20000000;
-				}
+				return 40000000;
 			}
 		}
 
@@ -2236,7 +2229,7 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	/**
-	 * @return the bitrate
+	 * @return the overall bitrate.
 	 * @since 1.50.0
 	 */
 	public int getBitrate() {
@@ -2244,7 +2237,7 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	/**
-	 * @param bitrate the bitrate to set
+	 * @param bitrate the overall bitrate to set.
 	 * @since 1.50.0
 	 */
 	public void setBitrate(int bitrate) {
@@ -2252,7 +2245,23 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	/**
-	 * @return the width
+	 * @return the video bitrate.
+	 * @since 6.4.0.
+	 */
+	public int getVideoBitrate() {
+		return videoBitrate;
+	}
+
+	/**
+	 * @param bitrate the video bitrate to set.
+	 * @since 6.4.0
+	 */
+	public void setVideoBitrate(int videoBitrate) {
+		this.videoBitrate = videoBitrate;
+	}
+
+	/**
+	 * @return the width.
 	 * @since 1.50.0
 	 */
 	public int getWidth() {

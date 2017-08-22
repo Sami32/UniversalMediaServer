@@ -142,6 +142,14 @@ public class LibMediaInfoParser {
 								media.setStereoscopy(MI.Get(video, i, "MultiView_Layout"));
 							}
 
+							value = MI.Get(video, i, "BitRate_Maximum");
+							if (isNotBlank(value)) {
+								media.setVideoBitrate(getBitrate(value));
+							} else if (isNotBlank(MI.Get(video, i, "BitRate"))) {
+								media.setVideoBitrate(getBitrate(MI.Get(video, i, "BitRate")));
+							} else {
+								media.setVideoBitrate(getBitrate(MI.Get(video, i, "BitRate_Nominal")));
+							}
 							media.setAspectRatioContainer(MI.Get(video, i, "DisplayAspectRatio/String"));
 							media.setAspectRatioVideoTrack(MI.Get(video, i, "DisplayAspectRatio_Original/String"));
 							media.setFrameRate(getFPSValue(MI.Get(video, i, "FrameRate")));
@@ -788,7 +796,7 @@ public class LibMediaInfoParser {
 	}
 
 	public static int getBitrate(String value) {
-		if (value.isEmpty()) {
+		if (isBlank(value)) {
 			return 0;
 		}
 
@@ -799,7 +807,7 @@ public class LibMediaInfoParser {
 		try {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
-			LOGGER.trace("Could not parse bitrate \"{}\": ", value, e.getMessage());
+			LOGGER.trace("Could not parse overall bitrate \"{}\": ", value, e.getMessage());
 			return 0;
 		}
 	}

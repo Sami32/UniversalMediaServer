@@ -267,7 +267,7 @@ public class FormatConfiguration {
 		}
 
 		public boolean match(String container, String videoCodec, String audioCodec) {
-			return match(container, videoCodec, audioCodec, 0, 0, 0, 0, 0, null);
+			return match(container, videoCodec, audioCodec, 0, 0, 0, 0, 0, 0, null);
 		}
 
 		/**
@@ -279,9 +279,9 @@ public class FormatConfiguration {
 		 *
 		 * Supported = f:mp4 n:2
 		 *
-		 * match("mp4", null, null, 2, 0, 0, 0, 0, null) = true
-		 * match("mp4", null, null, 6, 0, 0, 0, 0, null) = false
-		 * match("wav", null, null, 2, 0, 0, 0, 0, null) = false
+		 * match("mp4", null, null, 2, 0, 0, 0, 0, 0, null) = true
+		 * match("mp4", null, null, 6, 0, 0, 0, 0, 0, null) = false
+		 * match("wav", null, null, 2, 0, 0, 0, 0, 0, null) = false
 		 *
 		 * @param format
 		 * @param videoCodec
@@ -289,6 +289,7 @@ public class FormatConfiguration {
 		 * @param nbAudioChannels
 		 * @param frequency
 		 * @param bitrate
+		 * @param videoBitrate
 		 * @param videoWidth
 		 * @param videoHeight
 		 * @param extras
@@ -302,6 +303,7 @@ public class FormatConfiguration {
 			int nbAudioChannels,
 			int frequency,
 			int bitrate,
+			int videoBitrate,
 			int videoWidth,
 			int videoHeight,
 			Map<String, String> extras
@@ -466,7 +468,7 @@ public class FormatConfiguration {
 	// XXX Unused
 	@Deprecated
 	public boolean isHiFiMusicFileSupported() {
-		return match(WAV, null, null, 0, 96000, 0, 0, 0, null) != null || match(MP3, null, null, 0, 96000, 0, 0, 0, null) != null;
+		return match(WAV, null, null, 0, 96000, 0, 0, 0, 0, null) != null || match(MP3, null, null, 0, 96000, 0, 0, 0, 0, null) != null;
 	}
 
 	// XXX Unused
@@ -530,6 +532,7 @@ public class FormatConfiguration {
 				0,
 				0,
 				media.getBitrate(),
+				media.getVideoBitrate(),
 				media.getWidth(),
 				media.getHeight(),
 				media.getExtras()
@@ -555,6 +558,7 @@ public class FormatConfiguration {
 				audio.getAudioProperties().getNumberOfChannels(),
 				audio.getSampleRate(),
 				audio.getBitRate(),
+				media.getVideoBitrate(),
 				media.getWidth(),
 				media.getHeight(),
 				media.getExtras()
@@ -571,6 +575,7 @@ public class FormatConfiguration {
 				audio.getAudioProperties().getNumberOfChannels(),
 				audio.getSampleRate(),
 				media.getBitrate(),
+				media.getVideoBitrate(),
 				media.getWidth(),
 				media.getHeight(),
 				media.getExtras()
@@ -596,6 +601,7 @@ public class FormatConfiguration {
 			0,
 			0,
 			0,
+			0,
 			null
 		);
 	}
@@ -607,6 +613,7 @@ public class FormatConfiguration {
 		int nbAudioChannels,
 		int frequency,
 		int bitrate,
+		int videoBitrate,
 		int videoWidth,
 		int videoHeight,
 		Map<String, String> extras
@@ -621,6 +628,7 @@ public class FormatConfiguration {
 				nbAudioChannels,
 				frequency,
 				bitrate,
+				videoBitrate,
 				videoWidth,
 				videoHeight,
 				extras

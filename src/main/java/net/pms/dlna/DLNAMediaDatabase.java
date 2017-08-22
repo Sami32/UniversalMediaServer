@@ -63,7 +63,7 @@ public class DLNAMediaDatabase implements Runnable {
 	 * The database version should be incremented when we change anything to
 	 * do with the database since the last released version.
 	 */
-	private final String latestVersion = "8";
+	private final String latestVersion = "10";
 
 	// Database column sizes
 	private final int SIZE_CODECV = 32;
@@ -228,6 +228,7 @@ public class DLNAMediaDatabase implements Runnable {
 				sb.append(", TYPE                    INT");
 				sb.append(", DURATION                DOUBLE");
 				sb.append(", BITRATE                 INT");
+				sb.append(", VIDEOBITRATE            INT");
 				sb.append(", WIDTH                   INT");
 				sb.append(", HEIGHT                  INT");
 				sb.append(", SIZE                    NUMERIC");
@@ -364,6 +365,7 @@ public class DLNAMediaDatabase implements Runnable {
 					int id = rs.getInt("ID");
 					media.setDuration(toDouble(rs, "DURATION"));
 					media.setBitrate(rs.getInt("BITRATE"));
+					media.setVideoBitrate(rs.getInt("VIDEOBITRATE"));
 					media.setImageInfo((ImageInfo) rs.getObject("IMAGEINFO"));
 					media.setWidth(rs.getInt("WIDTH"));
 					media.setHeight(rs.getInt("HEIGHT"));
@@ -577,7 +579,7 @@ public class DLNAMediaDatabase implements Runnable {
 			int fileId = -1;
 			try (PreparedStatement ps = connection.prepareStatement(
 				"SELECT " +
-					"ID, FILENAME, MODIFIED, TYPE, DURATION, BITRATE, WIDTH, HEIGHT, SIZE, CODECV, FRAMERATE, " +
+					"ID, FILENAME, MODIFIED, TYPE, DURATION, BITRATE, VIDEOBITRATE, WIDTH, HEIGHT, SIZE, CODECV, FRAMERATE, " +
 					"ASPECT, ASPECTRATIOCONTAINER, ASPECTRATIOVIDEOTRACK, REFRAMES, AVCLEVEL, IMAGEINFO, THUMB, " +
 					"CONTAINER, MUXINGMODE, FRAMERATEMODE, STEREOSCOPY, MATRIXCOEFFICIENTS, TITLECONTAINER, " +
 					"TITLEVIDEOTRACK, VIDEOTRACKCOUNT, IMAGECOUNT, BITDEPTH " +
@@ -600,14 +602,8 @@ public class DLNAMediaDatabase implements Runnable {
 								rs.updateNull("DURATION");
 							}
 
-							if (type != Format.IMAGE) {
-								if (media.getBitrate() == 0) {
-									LOGGER.debug("Could not parse the bitrate for: " + name);
-								}
-								rs.updateInt("BITRATE", media.getBitrate());
-							} else {
-								rs.updateInt("BITRATE", 0);
-							}
+							rs.updateInt("BITRATE", media.getBitrate());
+							rs.updateInt("VIDEOBITRATE", media.getVideoBitrate());
 							rs.updateInt("WIDTH", media.getWidth());
 							rs.updateInt("HEIGHT", media.getHeight());
 							rs.updateLong("SIZE", media.getSize());
@@ -647,11 +643,11 @@ public class DLNAMediaDatabase implements Runnable {
 				// No fileId means it didn't exist
 				try (
 					PreparedStatement ps = connection.prepareStatement(
-						"INSERT INTO FILES (FILENAME, MODIFIED, TYPE, DURATION, BITRATE, WIDTH, HEIGHT, SIZE, CODECV, " +
+						"INSERT INTO FILES (FILENAME, MODIFIED, TYPE, DURATION, BITRATE, VIDEOBITRATE, WIDTH, HEIGHT, SIZE, CODECV, " +
 						"FRAMERATE, ASPECT, ASPECTRATIOCONTAINER, ASPECTRATIOVIDEOTRACK, REFRAMES, AVCLEVEL, IMAGEINFO, " +
 						"THUMB, CONTAINER, MUXINGMODE, FRAMERATEMODE, STEREOSCOPY, MATRIXCOEFFICIENTS, TITLECONTAINER, " +
 						"TITLEVIDEOTRACK, VIDEOTRACKCOUNT, IMAGECOUNT, BITDEPTH) VALUES "+
-						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 				) {
 					ps.setString(1, name);
 					ps.setTimestamp(2, new Timestamp(modified));
@@ -663,70 +659,64 @@ public class DLNAMediaDatabase implements Runnable {
 							ps.setNull(4, Types.DOUBLE);
 						}
 
-						int databaseBitrate = 0;
-						if (type != Format.IMAGE) {
-							databaseBitrate = media.getBitrate();
-							if (databaseBitrate == 0) {
-								LOGGER.debug("Could not parse the bitrate for: " + name);
-							}
-						}
-						ps.setInt(5, databaseBitrate);
-
-						ps.setInt(6, media.getWidth());
-						ps.setInt(7, media.getHeight());
-						ps.setLong(8, media.getSize());
-						ps.setString(9, left(media.getCodecV(), SIZE_CODECV));
-						ps.setString(10, left(media.getFrameRate(), SIZE_FRAMERATE));
-						ps.setString(11, left(media.getAspectRatioDvdIso(), SIZE_ASPECTRATIO_DVDISO));
-						ps.setString(12, left(media.getAspectRatioContainer(), SIZE_ASPECTRATIO_CONTAINER));
-						ps.setString(13, left(media.getAspectRatioVideoTrack(), SIZE_ASPECTRATIO_VIDEOTRACK));
-						ps.setByte(14, media.getReferenceFrameCount());
-						ps.setString(15, left(media.getAvcLevel(), SIZE_AVC_LEVEL));
+						ps.setInt(5, media.getBitrate());
+						ps.setInt(6, media.getVideoBitrate());
+						ps.setInt(7, media.getWidth());
+						ps.setInt(8, media.getHeight());
+						ps.setLong(9, media.getSize());
+						ps.setString(10, left(media.getCodecV(), SIZE_CODECV));
+						ps.setString(11, left(media.getFrameRate(), SIZE_FRAMERATE));
+						ps.setString(12, left(media.getAspectRatioDvdIso(), SIZE_ASPECTRATIO_DVDISO));
+						ps.setString(13, left(media.getAspectRatioContainer(), SIZE_ASPECTRATIO_CONTAINER));
+						ps.setString(14, left(media.getAspectRatioVideoTrack(), SIZE_ASPECTRATIO_VIDEOTRACK));
+						ps.setByte(15, media.getReferenceFrameCount());
+						ps.setString(16, left(media.getAvcLevel(), SIZE_AVC_LEVEL));
 						if (media.getImageInfo() != null) {
-							ps.setObject(16, media.getImageInfo());
-						} else {
-							ps.setNull(16, Types.OTHER);
-						}
-						if (media.getThumb() != null) {
-							ps.setObject(17, media.getThumb());
+							ps.setObject(17, media.getImageInfo());
 						} else {
 							ps.setNull(17, Types.OTHER);
 						}
-						ps.setString(18, left(media.getContainer(), SIZE_CONTAINER));
-						ps.setString(19, left(media.getMuxingModeAudio(), SIZE_MUXINGMODE));
-						ps.setString(20, left(media.getFrameRateMode(), SIZE_FRAMERATE_MODE));
-						ps.setString(21, left(media.getStereoscopy(), SIZE_STEREOSCOPY));
-						ps.setString(22, left(media.getMatrixCoefficients(), SIZE_MATRIX_COEFFICIENTS));
-						ps.setString(23, left(media.getFileTitleFromMetadata(), SIZE_TITLE));
-						ps.setString(24, left(media.getVideoTrackTitleFromMetadata(), SIZE_TITLE));
-						ps.setInt(25, media.getVideoTrackCount());
-						ps.setInt(26, media.getImageCount());
-						ps.setInt(27, media.getVideoBitDepth());
+						if (media.getThumb() != null) {
+							ps.setObject(18, media.getThumb());
+						} else {
+							ps.setNull(18, Types.OTHER);
+						}
+						ps.setString(19, left(media.getContainer(), SIZE_CONTAINER));
+						ps.setString(20, left(media.getMuxingModeAudio(), SIZE_MUXINGMODE));
+						ps.setString(21, left(media.getFrameRateMode(), SIZE_FRAMERATE_MODE));
+						ps.setString(22, left(media.getStereoscopy(), SIZE_STEREOSCOPY));
+						ps.setString(23, left(media.getMatrixCoefficients(), SIZE_MATRIX_COEFFICIENTS));
+						ps.setString(24, left(media.getFileTitleFromMetadata(), SIZE_TITLE));
+						ps.setString(25, left(media.getVideoTrackTitleFromMetadata(), SIZE_TITLE));
+						ps.setInt(26, media.getVideoTrackCount());
+						ps.setInt(27, media.getImageCount());
+						ps.setInt(28, media.getVideoBitDepth());
 					} else {
 						ps.setString(4, null);
 						ps.setInt(5, 0);
 						ps.setInt(6, 0);
 						ps.setInt(7, 0);
-						ps.setLong(8, 0);
-						ps.setNull(9, Types.VARCHAR);
+						ps.setInt(8, 0);
+						ps.setLong(9, 0);
 						ps.setNull(10, Types.VARCHAR);
 						ps.setNull(11, Types.VARCHAR);
 						ps.setNull(12, Types.VARCHAR);
 						ps.setNull(13, Types.VARCHAR);
-						ps.setByte(14, (byte) -1);
-						ps.setNull(15, Types.VARCHAR);
-						ps.setNull(16, Types.OTHER);
+						ps.setNull(14, Types.VARCHAR);
+						ps.setByte(15, (byte) -1);
+						ps.setNull(16, Types.VARCHAR);
 						ps.setNull(17, Types.OTHER);
-						ps.setNull(18, Types.VARCHAR);
+						ps.setNull(18, Types.OTHER);
 						ps.setNull(19, Types.VARCHAR);
 						ps.setNull(20, Types.VARCHAR);
 						ps.setNull(21, Types.VARCHAR);
 						ps.setNull(22, Types.VARCHAR);
 						ps.setNull(23, Types.VARCHAR);
 						ps.setNull(24, Types.VARCHAR);
-						ps.setInt(25, 0);
+						ps.setNull(25, Types.VARCHAR);
 						ps.setInt(26, 0);
 						ps.setInt(27, 0);
+						ps.setInt(28, 0);
 					}
 					ps.executeUpdate();
 					try (ResultSet rs = ps.getGeneratedKeys()) {

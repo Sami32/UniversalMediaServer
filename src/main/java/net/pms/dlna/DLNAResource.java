@@ -979,9 +979,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				} else if (!renderer.isResolutionCompatibleWithRenderer(media.getWidth(), media.getHeight())) {
 					isIncompatible = true;
 					LOGGER.trace(prependTraceReason + "the resolution is incompatible with the renderer.", getName());
-				} else if (media.getBitrate() > maxBandwidth) {
+				} else if (media.getRealBitrate() > maxBandwidth) {
 					isIncompatible = true;
-					LOGGER.trace(prependTraceReason + "the bitrate ({} b/s) is too high ({} b/s).", getName(), media.getBitrate(), maxBandwidth);
+					LOGGER.trace(prependTraceReason + "the bitrate ({} b/s) is too high ({} b/s).", getName(), media.getRealBitrate(), maxBandwidth);
 				} else if (!renderer.isVideoBitDepthSupported(media.getVideoBitDepth())) {
 					isIncompatible = true;
 					LOGGER.trace(prependTraceReason + "the video bit depth ({}) is not supported.", getName(), media.getVideoBitDepth());
@@ -2592,7 +2592,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 					}
 
-					addAttribute(sb, "bitrate", media.getRealVideoBitrate());
+					addAttribute(sb, "bitrate", media.getRealBitrate() / 8);
 					if (firstAudioTrack != null) {
 						if (firstAudioTrack.getAudioProperties().getNumberOfChannels() > 0) {
 							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getAudioProperties().getNumberOfChannels());
@@ -2615,8 +2615,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					}
 				} else if (getFormat() != null && getFormat().isAudio()) {
 					if (media != null && media.isMediaparsed()) {
-						if (media.getBitrate() > 0) {
-							addAttribute(sb, "bitrate", media.getBitrate());
+						if (media.getRealBitrate() > 0) {
+							addAttribute(sb, "bitrate", media.getRealBitrate() / 8);
 						}
 						if (media.getDuration() != null && media.getDuration().doubleValue() != 0.0) {
 							wireshark.append(" duration=").append(StringUtil.formatDLNADuration(media.getDuration()));
@@ -3450,10 +3450,10 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 		}
 
-		if (low > 0 && media.getBitrate() > 0) {
-			lastStartPosition = (low * 8) / media.getBitrate();
+		if (low > 0 && media.getRealBitrate() > 0) {
+			lastStartPosition = (low * 64) / media.getRealBitrate();
 			LOGGER.trace("Estimating seek position from byte range:");
-			LOGGER.trace("   media.getBitrate: " + media.getBitrate());
+			LOGGER.trace("   media.getBitrate: " + media.getRealBitrate() / 8);
 			LOGGER.trace("   low: " + low);
 			LOGGER.trace("   lastStartPosition: " + lastStartPosition);
 		} else {
