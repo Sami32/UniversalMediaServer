@@ -713,6 +713,7 @@ public class FormatConfigurationRegressionTest0 {
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue("'" + str0 + "' != '" + "g729"+ "'", str0.equals("g729"));
   }
+
   @Test
   public void testWMA10() throws Throwable {
     java.lang.String str0 = net.pms.configuration.FormatConfiguration.WMA10;
@@ -765,6 +766,62 @@ public class FormatConfigurationRegressionTest0 {
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue("'" + str0 + "' != '" + "rle"+ "'", str0.equals("rle"));
 
+  }
+
+  @Test
+  public void testCAF() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.CAF;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "caf"+ "'", str0.equals("caf"));
+  }
+
+  @Test
+  public void testMACE3() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.MACE3;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "mace3"+ "'", str0.equals("mace3"));
+  }
+
+  @Test
+  public void testMACE6() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.MACE6;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "mace6"+ "'", str0.equals("mace6"));
+  }
+
+  @Test
+  public void testTGA() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.TGA;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "tga"+ "'", str0.equals("tga"));
+  }
+
+  @Test
+  public void testFFV1() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.FFV1;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "ffv1"+ "'", str0.equals("ffv1"));
+  }
+
+  @Test
+  public void testCELP() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.CELP;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "celp"+ "'", str0.equals("celp"));
+  }
+
+  @Test
+  public void testQCELP() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.QCELP;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "qcelp"+ "'", str0.equals("qcelp"));
   }
 
 }
