@@ -355,7 +355,7 @@ public class FFMpegVideo extends Player {
 
 			if (configuration.isAudioRemuxAC3() && params.aid != null && params.aid.isAC3() && !avisynth() && renderer.isTranscodeToAC3() && !isSubtitlesAndTimeseek) {
 				// AC-3 remux
-				if (!customFFmpegOptions.contains("-c:a ")) {
+				if (!customFFmpegOptions.contains("-c:a ") && !customFFmpegOptions.contains("-codec:a") && !customFFmpegOptions.contains("-acodec")) {
 					transcodeOptions.add("-c:a");
 					transcodeOptions.add("copy");
 				}
@@ -369,7 +369,7 @@ public class FFMpegVideo extends Player {
 					transcodeOptions.add("-c:a");
 					transcodeOptions.add("aac");
 				} else {
-					if (!customFFmpegOptions.contains("-c:a ")) {
+					if (!customFFmpegOptions.contains("-c:a ") && !customFFmpegOptions.contains("-codec:a") && !customFFmpegOptions.contains("-acodec")) {
 						transcodeOptions.add("-c:a");
 						transcodeOptions.add("ac3");
 					}
@@ -385,7 +385,7 @@ public class FFMpegVideo extends Player {
 
 			// Output video codec
 			if (renderer.isTranscodeToH264() || renderer.isTranscodeToH265()) {
-				if (!customFFmpegOptions.contains("-c:v")) {
+				if (!customFFmpegOptions.contains("-c:v ") && !customFFmpegOptions.contains("-codec:v") && !customFFmpegOptions.contains("-vcodec")) {
 					transcodeOptions.add("-c:v");
 					if (renderer.isTranscodeToMP4() && renderer.isTranscodeToH264()) {
 						transcodeOptions.add("libx264");
@@ -417,8 +417,10 @@ public class FFMpegVideo extends Player {
 						}
 					}
 				}
-				transcodeOptions.add("-pix_fmt");
-				transcodeOptions.add("yuv420p");
+				if (!customFFmpegOptions.contains("-pix_fmt")) {
+					transcodeOptions.add("-pix_fmt");
+					transcodeOptions.add("yuv420p");
+				}
 			} else if (!dtsRemux) {
 				transcodeOptions.add("-c:v");
 				transcodeOptions.add("mpeg2video");
@@ -464,6 +466,8 @@ public class FFMpegVideo extends Player {
 	 */
 	public List<String> getVideoBitrateOptions(DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
 		List<String> videoBitrateOptions = new ArrayList<>();
+		final RendererConfiguration renderer = params.mediaRenderer;
+		String customFFmpegOptions = renderer.getCustomFFmpegOptions();
 		boolean low = false;
 
 		int defaultMaxBitrates[] = getVideoBitrateConfig(configuration.getMaximumBitrate());
@@ -568,10 +572,12 @@ public class FFMpegVideo extends Player {
 				);
 			}
 
-			videoBitrateOptions.add("-bufsize");
-			videoBitrateOptions.add(String.valueOf(bufSize) + "k");
+			if (!customFFmpegOptions.contains("-bufsize")) {
+				videoBitrateOptions.add("-bufsize");
+				videoBitrateOptions.add(String.valueOf(bufSize) + "k");
+			}
 
-			if (defaultMaxBitrates[0] > 0) {
+			if (defaultMaxBitrates[0] > 0 && !customFFmpegOptions.contains("-maxrate")) {
 				videoBitrateOptions.add("-maxrate");
 				videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
 			}
@@ -632,7 +638,15 @@ public class FFMpegVideo extends Player {
 					}
 				}
 			}
-			if (isNotBlank(x264CRF) && !params.mediaRenderer.nox264()) {
+			if (
+				isNotBlank(x264CRF) &&
+				!params.mediaRenderer.nox264() &&
+				!customFFmpegOptions.contains("crf") &&
+				!customFFmpegOptions.contains("-b:v") &&
+				!customFFmpegOptions.contains("-vb") &&
+				!customFFmpegOptions.contains("-q:v") &&
+				!customFFmpegOptions.contains("-qscale")
+			) {
 				videoBitrateOptions.add("-crf");
 				videoBitrateOptions.add(x264CRF);
 			}
@@ -1043,13 +1057,13 @@ public class FFMpegVideo extends Player {
 					channels = configuration.getAudioChannelCount();
 				}
 
-				if (!customFFmpegOptions.contains("-ac ") && channels > 0) {
+				if (!customFFmpegOptions.contains("-ac ") && !customFFmpegOptions.contains("ocl=") && channels > 0) {
 					cmdList.add("-ac");
 					cmdList.add(String.valueOf(channels));
 				}
 
-				if (!customFFmpegOptions.contains("-ab ")) {
-					cmdList.add("-ab");
+				if (!customFFmpegOptions.contains("-b:a ") && !customFFmpegOptions.contains("-ab ")) {
+					cmdList.add("-b:a");
 					if (renderer.isTranscodeToAAC()) {
 						cmdList.add(Math.min(configuration.getAudioBitrate(), 320) + "k");
 					} else {
