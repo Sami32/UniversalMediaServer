@@ -2579,7 +2579,12 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					}
 
 					if (media.getResolution() != null) {
-						if (player != null && mediaRenderer.isKeepAspectRatio()) {
+						if (
+							player != null &&
+							(
+								mediaRenderer.isKeepAspectRatio() // Need to be looked at, as something seem wrong here
+							)
+						) {
 							addAttribute(sb, "resolution", getResolutionForKeepAR(media.getWidth(), media.getHeight()));
 						} else {
 							addAttribute(sb, "resolution", media.getResolution());

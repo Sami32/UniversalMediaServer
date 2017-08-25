@@ -135,38 +135,35 @@ public class FFMpegVideo extends Player {
 				!"16:9".equals(media.getAspectRatioContainer());
 
 		// Scale and pad the video if necessary
-		if (isResolutionTooHighForRenderer || (!renderer.isRescaleByRenderer() && renderer.isMaximumResolutionSpecified() && media.getWidth() < 720)) { // Do not rescale for SD video and higher
-			if (media.is3dFullSbsOrOu()) {
-				scalePadFilterChain.add(String.format("scale=%1$d:%2$d", renderer.getMaxVideoWidth(), renderer.getMaxVideoHeight()));
-			} else {
-				scalePadFilterChain.add(String.format("scale=iw*min(%1$d/iw\\,%2$d/ih):ih*min(%1$d/iw\\,%2$d/ih)", renderer.getMaxVideoWidth(), renderer.getMaxVideoHeight()));
 
-				if (keepAR) {
-					scalePadFilterChain.add(String.format("pad=%1$d:%2$d:(%1$d-iw)/2:(%2$d-ih)/2", renderer.getMaxVideoWidth(), renderer.getMaxVideoHeight()));
-				}
-			}
-		} else if (keepAR && isMediaValid) {
-			if ((media.getWidth() / (double) media.getHeight()) >= (16 / (double) 9)) {
-				scalePadFilterChain.add("pad=iw:iw/(16/9):0:(oh-ih)/2");
-				scaleHeight = (int) Math.round(scaleWidth / (16 / (double) 9));
-			} else {
-				scalePadFilterChain.add("pad=ih*(16/9):ih:(ow-iw)/2:0");
-				scaleWidth = (int) Math.round(scaleHeight * (16 / (double) 9));
-			}
+			// Make sure we didn't exceed the renderer's maximum resolution, or don't have a too little resolution not supported by many renderers
+			// And make sure that the values are divisible by 2, as it's mandatory while transcoding to H.264 YUV420p
+		if (
+			isResolutionTooHighForRenderer ||
+			scaleHeight > renderer.getMaxVideoHeight() ||
+			scaleWidth  > renderer.getMaxVideoWidth() ||
+			// such low resolution video is not supported by most of the renderers
+			media.getWidth() < 32 ||
+			media.getHeight() < 32 ||
+			// Do not rescale for SD video and higher
+			!renderer.isRescaleByRenderer() && renderer.isMaximumResolutionSpecified() && media.getWidth() < 720
+		) {
+			scaleHeight = renderer.getMaxVideoHeight();
+			scaleWidth  = renderer.getMaxVideoWidth();
+			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight + ":force_original_aspect_ratio=decrease:flags=lanczos+accurate_rnd,bwdif=mode=send_frame");
+		}
 
-			scaleWidth  = convertToModX(scaleWidth, 4);
-			scaleHeight = convertToModX(scaleHeight, 4);
+		if (
+			!keepAR &&
+			(renderer.isTranscodeToH264() || renderer.isTranscodeToMP4()) &&
+			(media.getWidth() % 2 != 0 || media.getHeight() % 2 != 0)
+		) {
+			scalePadFilterChain.add("pad=ceil(iw/2)*2:ceil(ih/2)*2:-1:-1");
+		}
 
-			// Make sure we didn't exceed the renderer's maximum resolution.
-			if (
-				scaleHeight > renderer.getMaxVideoHeight() ||
-				scaleWidth  > renderer.getMaxVideoWidth()
-			) {
-				scaleHeight = renderer.getMaxVideoHeight();
-				scaleWidth  = renderer.getMaxVideoWidth();
-			}
-
-			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight);
+		if (keepAR && isMediaValid && !media.is3dFullSbsOrOu()) {
+			scalePadFilterChain.add("pad='if(gte(a,16/9),ceil(iw/2)*2,ceil(round(ih*16/9)/sar/2)*2)':'if(gte(a,16/9),ceil(round(ow*9/16)/2)*2,ceil(ih/2)*2)':-1:-1,setdar=16/9");
+//			scalePadFilterChain.add(String.format("pad=ceil(%1$d/2)*2:ceil(%2$d/2)*2:-1:-1,setdar=16/9", renderer.getMaxVideoWidth(), renderer.getMaxVideoHeight()));
 		}
 
 		filterChain.addAll(scalePadFilterChain);
@@ -407,10 +404,6 @@ public class FFMpegVideo extends Player {
 							transcodeOptions.add("40");
 						}
 					}
-				}
-				if (!customFFmpegOptions.contains("-level")) {
-					transcodeOptions.add("-level");
-					transcodeOptions.add("31");
 				}
 				transcodeOptions.add("-pix_fmt");
 				transcodeOptions.add("yuv420p");
