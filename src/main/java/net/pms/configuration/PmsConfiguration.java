@@ -2697,7 +2697,7 @@ public class PmsConfiguration extends RendererConfiguration {
 	 * @return
 	 */
 	public boolean isFFmpegDeferToMEncoderForProblematicSubtitles() {
-		return getBoolean(KEY_FFMPEG_MENCODER_PROBLEMATIC_SUBTITLES, true);
+		return getBoolean(KEY_FFMPEG_MENCODER_PROBLEMATIC_SUBTITLES, false);
 	}
 
 	public void setFFmpegFontConfig(boolean value) {
@@ -2705,7 +2705,7 @@ public class PmsConfiguration extends RendererConfiguration {
 	}
 
 	public boolean isFFmpegFontConfig() {
-		return getBoolean(KEY_FFMPEG_FONTCONFIG, false);
+		return getBoolean(KEY_FFMPEG_FONTCONFIG, true);
 	}
 
 	public void setMuxAllAudioTracks(boolean value) {
