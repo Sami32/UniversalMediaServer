@@ -150,6 +150,8 @@ public class LibMediaInfoParser {
 							} else {
 								media.setVideoBitrate(getBitrate(MI.Get(video, i, "BitRate_Nominal")));
 							}
+							media.setPixelAspectRatio(MI.Get(video, i, "PixelAspectRatio"));
+							media.setInterlaced(MI.Get(video, i, "ScanOrder"));
 							media.setAspectRatioContainer(MI.Get(video, i, "DisplayAspectRatio/String"));
 							media.setAspectRatioVideoTrack(MI.Get(video, i, "DisplayAspectRatio_Original/String"));
 							media.setFrameRate(getFPSValue(MI.Get(video, i, "FrameRate")));
