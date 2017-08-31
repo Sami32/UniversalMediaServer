@@ -2602,6 +2602,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
 						}
 					}
+					addAttribute(sb, "colorDepth", media.getVideoBitDepth());
 				} else if (getFormat() != null && getFormat().isImage()) {
 					if (media != null && media.isMediaparsed()) {
 						wireshark.append(" size=").append(media.getSize());
