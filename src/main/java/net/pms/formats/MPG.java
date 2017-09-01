@@ -58,6 +58,7 @@ public class MPG extends Format {
 			"mpeg",
 			"mpg",
 			"mts",
+			"s4ud",
 			"tivo",
 			"tmf",
 			"tp",
@@ -65,6 +66,7 @@ public class MPG extends Format {
 			"ty",
 			"vdr",
 			"vob",
+			"vro",
 			"wm",
 			"wmv",
 			"wtv"
