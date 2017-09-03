@@ -1962,34 +1962,26 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		String mime = getRendererMimeType(mediaRenderer);
 
 		String dlnaOrgPnFlags = null;
-
-		if (mediaRenderer.isDLNAOrgPNUsed() || mediaRenderer.isAccurateDLNAOrgPN()) {
-			if (mediaRenderer.isPS3()) {
-				if (mime.equals(DIVX_TYPEMIME)) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=AVI";
-				} else if (mime.equals(WMV_TYPEMIME) && media != null && media.getHeight() > 700) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=WMVHIGH_PRO";
-				}
-			} else if (mediaRenderer.isTranscodeToMP4() && mediaRenderer.isTranscodeToH264() && mime.equals(MP4_TYPEMIME)) { // AVC_MP4_NDHD
-				if (mediaRenderer.isTranscodeToAAC()) {
+		if (mediaRenderer.isDLNAOrgPNUsed()) {
+			if (mime.equals(DIVX_TYPEMIME) || mime.equals(AVI_TYPEMIME)  && mediaRenderer.isAccurateDLNAOrgPN()) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=AVI";
+			} else if (mediaRenderer.isPS3() && (mediaRenderer.isTranscodeToWMV() || mime.equals(WMV_TYPEMIME)) && media != null && media.getHeight() > 700) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=WMVHIGH_PRO";
+			} else if (mime.equals(MP4_TYPEMIME) && mediaRenderer.isAccurateDLNAOrgPN() && (media.isH264() && player == null || player != null && mediaRenderer.isTranscodeToH264())) {
+				dlnaOrgPnFlags = "AVC_MP4_NDHD";
+				if (mediaRenderer.isTranscodeToAAC() || media_audio != null && media_audio.isAACLC() && configurationSpecificToRenderer.isAudioRemuxAACLC()) {
 					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_EU";
-				}
-				if (mediaRenderer.isTranscodeToAC3()) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_EAC3";
-				}
-				if (mediaRenderer.isTranscodeToDTS()) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_DTS";
-				}
-			} else if (mediaRenderer.isTranscodeToMKV() && mime.equals(MATROSKA_TYPEMIME) && (mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())) {
-				dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
-			} else if (!mediaRenderer.isTranscodeToMKV() && !mediaRenderer.isTranscodeToMP4()) {
-				if (mime.equals(MPEG_TYPEMIME)) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_PS_LocalizedValue(localizationValue);
-					if (mediaRenderer.isTranscodeToAC3() && "DLNA.ORG_PN=MPEG_PS_PAL".equals(dlnaOrgPnFlags)) {
-						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_PAL_XAC3";
+				} else if (mediaRenderer.isTranscodeToAC3() || media_audio != null && media_audio.isAC3() && configurationSpecificToRenderer.isAudioRemuxAC3()) {
+					if (media.isHDVideo()) {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_EAC3";
+					} else {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_SD_EAC3";
 					}
-					if (mediaRenderer.isTranscodeToAC3() && "DLNA.ORG_PN=MPEG_PS_NTSC".equals(dlnaOrgPnFlags)) {
-						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_NTSC_XAC3";
+				} else if (mediaRenderer.isTranscodeToDTS() || media_audio != null && media_audio.isDTS() && configurationSpecificToRenderer.isAudioRemuxDTS()) {
+					if (media.isHDVideo()) {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_DTS";
+					} else {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_MP_SD_DTS";
 					}
 
 					if (player != null) {
@@ -2379,6 +2371,34 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				} else if (mime.substring(0, 9).equals(AUDIO_LPCM_TYPEMIME) || mime.equals(AUDIO_WAV_TYPEMIME)) {
 					dlnaOrgPnFlags = "DLNA.ORG_PN=LPCM";
 				}
+				if (fps < 26 && isBlank(media.getInterlaced()) || fps < 52 && isNotBlank(media.getInterlaced())) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_PAL";
+//					if (mediaRenderer.isTranscodeToAC3() || media_audio != null && media_audio.isAC3() && configurationSpecificToRenderer.isAudioRemuxAC3()) {
+//						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_PAL_XAC3";
+//					}
+				} else if (fps > 29 && isBlank(media.getInterlaced()) || fps > 59 && isNotBlank(media.getInterlaced())) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_NTSC";
+//					if (mediaRenderer.isTranscodeToAC3() || media_audio != null && media_audio.isAC3() && configurationSpecificToRenderer.isAudioRemuxAC3()) {
+//						dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_NTSC_XAC3";
+//					}
+				}
+			} else if (mime.equals(JPEG_TYPEMIME)) {
+				int width = media.getWidth();
+				int height = media.getHeight();
+				if (width > 1024 || height > 768) { // 1024 * 768
+					dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_LRG";
+				} else if (width > 640 || height > 480) { // 640 * 480
+					dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_MED";
+				} else if (width > 160 || height > 160) { // 160 * 160
+					dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_SM";
+				} else {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_TN";
+				}
+
+			} else if (mime.equals(AUDIO_MP3_TYPEMIME)) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=MP3";
+			} else if (mime.substring(0, 9).equals(AUDIO_LPCM_TYPEMIME) || mime.equals(AUDIO_WAV_TYPEMIME)) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=LPCM";
 			}
 
 			if (dlnaOrgPnFlags != null && dlnaOrgPnFlags.length() > 12) {

@@ -119,6 +119,8 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	// Current video transcoding options
 	protected static final String MP4H264AAC = "MP4-H264-AAC";
 	protected static final String MP4H264AC3 = "MP4-H264-AC3";
+	protected static final String MP4H265AAC = "MP4-H265-AAC";
+	protected static final String MP4H265AC3 = "MP4-H265-AC3";
 	protected static final String MPEGTSH264AAC = "MPEGTS-H264-AAC";
 	protected static final String MPEGTSH264AC3 = "MPEGTS-H264-AC3";
 	protected static final String MPEGTSH265AAC = "MPEGTS-H265-AAC";
@@ -1204,6 +1206,14 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return getVideoTranscode().equals(MP4H264AC3);
 	}
 
+	public boolean isTranscodeToMP4H265AC3() {
+		return getVideoTranscode().equals(MP4H265AC3);
+	}
+
+	public boolean isTranscodeToMP4H265AAC() {
+		return getVideoTranscode().equals(MP4H265AAC);
+	}
+
 	public boolean isTranscodeToMPEGTSH265AAC() {
 		return getVideoTranscode().equals(MPEGTSH265AAC);
 	}
@@ -1216,14 +1226,14 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	 * @return whether to use the AC-3 audio codec for transcoded video
 	 */
 	public boolean isTranscodeToAC3() {
-		return isTranscodeToMPEGPSMPEG2AC3() || isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGTSH264AC3() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMP4H264AC3();
+		return isTranscodeToMPEGPSMPEG2AC3() || isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGTSH264AC3() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMP4H264AC3() || isTranscodeToMP4H265AC3();
 	}
 
 	/**
 	 * @return whether to use the AAC audio codec for transcoded video
 	 */
 	public boolean isTranscodeToAAC() {
-		return isTranscodeToMPEGTSH264AAC() || isTranscodeToMPEGTSH265AAC() || isTranscodeToMP4H264AAC();
+		return isTranscodeToMPEGTSH264AAC() || isTranscodeToMPEGTSH265AAC() || isTranscodeToMP4H264AAC() || isTranscodeToMP4H265AAC();
 	}
 
 	/**
@@ -1237,7 +1247,7 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	 * @return whether to use the H.265 video codec for transcoded video
 	 */
 	public boolean isTranscodeToH265() {
-		return isTranscodeToMPEGTSH265AAC() || isTranscodeToMPEGTSH265AC3();
+		return isTranscodeToMPEGTSH265AAC() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMP4H265AAC() || isTranscodeToMP4H265AC3();
 	}
 
 	/**
@@ -1316,14 +1326,18 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H264,  FormatConfiguration.AAC_LC);
 				} else if (isTranscodeToMP4H264AC3()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H264,  FormatConfiguration.AC3);
+				} else if (isTranscodeToMP4H265AAC()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H265,  FormatConfiguration.AAC_LC);
+				} else if (isTranscodeToMP4H265AC3()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H265,  FormatConfiguration.AC3);
 				} else if (isTranscodeToMPEGTSH264AC3()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H264,  FormatConfiguration.AC3);
 				} else if (isTranscodeToMPEGTSH264AAC()) {
-					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H264, FormatConfiguration.AAC_LC);
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H264,  FormatConfiguration.AAC_LC);
 				} else if (isTranscodeToMPEGTSH265AC3()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H265,  FormatConfiguration.AC3);
 				} else if (isTranscodeToMPEGTSH265AAC()) {
-					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H265, FormatConfiguration.AAC_LC);
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.H265,  FormatConfiguration.AAC_LC);
 				} else if (isTranscodeToMPEGTSMPEG2AC3()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.MPEG2, FormatConfiguration.AC3);
 				} else if (isTranscodeToWMV()) {

@@ -1424,7 +1424,7 @@ public class DLNAMediaInfo implements Cloneable {
 	 * @return {boolean}
 	 */
 	public boolean isH264() {
-		return codecV != null && codecV.startsWith("h264");
+		return codecV.equals(FormatConfiguration.H264);
 	}
 
 	/**
@@ -1433,7 +1433,7 @@ public class DLNAMediaInfo implements Cloneable {
 	 * @return {boolean}
 	 */
 	public boolean isH265() {
-		return codecV != null && codecV.equals("h265");
+		return codecV.equals(FormatConfiguration.H265);
 	}
 
 	/**
@@ -2169,7 +2169,7 @@ public class DLNAMediaInfo implements Cloneable {
 		cmdArray[6] = "copy";
 		cmdArray[7] = "-f";
 		cmdArray[8] = "h264";
-		cmdArray[9] = "-bsf";
+		cmdArray[9] = "-bsf:v";
 		cmdArray[10] = "h264_mp4toannexb";
 		cmdArray[11] = "-an";
 		cmdArray[12] = "-y";

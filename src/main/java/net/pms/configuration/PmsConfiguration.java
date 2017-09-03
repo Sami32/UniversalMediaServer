@@ -99,9 +99,11 @@ public class PmsConfiguration extends RendererConfiguration {
 	protected static final String KEY_AUTOMATIC_DISCOVER = "automatic_discover";
 	protected static final String KEY_AUTOMATIC_MAXIMUM_BITRATE = "automatic_maximum_bitrate";
 	protected static final String KEY_AUDIO_BITRATE = "audio_bitrate";
+	protected static final String KEY_AAC_AUDIO_BITRATE = "aac_audio_bitrate";
 	protected static final String KEY_AUDIO_CHANNEL_COUNT = "audio_channels";
 	protected static final String KEY_AUDIO_EMBED_DTS_IN_PCM = "audio_embed_dts_in_pcm";
 	protected static final String KEY_AUDIO_LANGUAGES = "audio_languages";
+	protected static final String KEY_AUDIO_REMUX_AACLC = "audio_remux_aaclc";
 	protected static final String KEY_AUDIO_REMUX_AC3 = "audio_remux_ac3";
 	protected static final String KEY_AUDIO_RESAMPLE = "audio_resample";
 	protected static final String KEY_AUDIO_SUB_LANGS = "audio_subtitles_languages";
@@ -793,6 +795,15 @@ public class PmsConfiguration extends RendererConfiguration {
 	 */
 	public boolean isTsmuxerForceFps() {
 		return getBoolean(KEY_TSMUXER_FORCEFPS, true);
+	}
+
+	/**
+	 * The AAC-LC audio bitrate determines the quality of digital audio sound. An AV-receiver
+	 * or amplifier has to be capable of playing this quality. Default value is 192.
+	 * @return The AAC-LC audio bitrate.
+	 */
+	public int getAACAudioBitrate() {
+		return getInt(KEY_AAC_AUDIO_BITRATE, 192);
 	}
 
 	/**
@@ -1655,11 +1666,22 @@ public class PmsConfiguration extends RendererConfiguration {
 	}
 
 	/**
-	 * Sets the AC3 audio bitrate, which determines the quality of digital
+	 * Sets the AAC-LC audio bitrate, which determines the quality of digital
 	 * audio sound. An AV-receiver or amplifier has to be capable of playing
 	 * this quality.
 	 *
-	 * @param value The AC3 audio bitrate.
+	 * @param value The AAC-LC audio bitrate.
+	 */
+	public void setAACAudioBitrate(int value) {
+		configuration.setProperty(KEY_AAC_AUDIO_BITRATE, value);
+	}
+
+	/**
+	 * Sets the AC-3 audio bitrate, which determines the quality of digital
+	 * audio sound. An AV-receiver or amplifier has to be capable of playing
+	 * this quality.
+	 *
+	 * @param value The AC-3 audio bitrate.
 	 */
 	public void setAudioBitrate(int value) {
 		configuration.setProperty(KEY_AUDIO_BITRATE, value);
@@ -2440,6 +2462,14 @@ public class PmsConfiguration extends RendererConfiguration {
 	public boolean getMencoderMT() {
 		boolean isMultiCore = getNumberOfCpuCores() > 1;
 		return getBoolean(KEY_MENCODER_MT, isMultiCore);
+	}
+
+	public void setAudioRemuxAACLC(boolean value) {
+		configuration.setProperty(KEY_AUDIO_REMUX_AACLC, value);
+	}
+
+	public boolean isAudioRemuxAACLC() {
+		return getBoolean(KEY_AUDIO_REMUX_AACLC, false);
 	}
 
 	public void setAudioRemuxAC3(boolean value) {

@@ -108,6 +108,7 @@ public class MEncoderVideo extends Player {
 	protected boolean encodedAudioPassthrough;
 	protected boolean pcm;
 	protected boolean ovccopy;
+	protected boolean aacRemux;
 	protected boolean ac3Remux;
 	protected boolean isTranscodeToMPEGTS;
 	protected boolean isTranscodeToH264;
@@ -542,12 +543,16 @@ public class MEncoderVideo extends Player {
 		defaultArgsList.add("-oac");
 		if (ac3Remux || dtsRemux) {
 			defaultArgsList.add("copy");
+		} else if (aacRemux) {
+			defaultArgsList.add("copy");
+			defaultArgsList.add("-fafmttag");
+			defaultArgsList.add("0x706D");
 		} else if (pcm) {
 			defaultArgsList.add("pcm");
 		} else if (isTranscodeToAAC) {
 			defaultArgsList.add("faac");
 			defaultArgsList.add("-faacopts");
-			defaultArgsList.add("br=320:mpeg=4:object=2");
+			defaultArgsList.add("mpeg=4:tns:object=2:raw:br=192");
 		} else {
 			defaultArgsList.add("lavc");
 		}
@@ -764,6 +769,8 @@ public class MEncoderVideo extends Player {
 						defaultMaxBitrates[0] -= 1510;
 						break;
 					case "aac":
+						defaultMaxBitrates[0] -= configuration.getAACAudioBitrate();
+						break;
 					case "ac3":
 						defaultMaxBitrates[0] -= configuration.getAudioBitrate();
 						break;
@@ -834,6 +841,7 @@ public class MEncoderVideo extends Player {
 
 		ovccopy  = false;
 		pcm      = false;
+		aacRemux = false;
 		ac3Remux = false;
 		dtsRemux = false;
 		wmv      = false;
@@ -1058,7 +1066,6 @@ public class MEncoderVideo extends Player {
 			params.aid != null &&
 			params.aid.isAC3() &&
 			!avisynth() &&
-			params.mediaRenderer.isTranscodeToAC3() &&
 			!configuration.isMEncoderNormalizeVolume() &&
 			!combinedCustomOptions.contains("acodec=") &&
 			!encodedAudioPassthrough &&
@@ -1066,6 +1073,17 @@ public class MEncoderVideo extends Player {
 			params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
 		) {
 			ac3Remux = true;
+		} else if (
+			configuration.isAudioRemuxAACLC() &&
+			params.aid != null &&
+			params.aid.isAACLC() &&
+			!avisynth() &&
+			!configuration.isMEncoderNormalizeVolume() &&
+			!combinedCustomOptions.contains("acodec=") &&
+			!encodedAudioPassthrough &&
+			params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
+		) {
+			aacRemux = true;
 		} else {
 			// Now check for DTS remux and LPCM streaming
 			dtsRemux = isTsMuxeRVideoEngineEnabled &&
@@ -1129,6 +1147,8 @@ public class MEncoderVideo extends Player {
 		int channels;
 		if (ac3Remux) {
 			channels = params.aid.getAudioProperties().getNumberOfChannels(); // AC-3 remux
+		} else if (aacRemux) {
+			channels = params.aid.getAudioProperties().getNumberOfChannels(); // AAC-LC remux
 		} else if (dtsRemux || encodedAudioPassthrough || (!params.mediaRenderer.isXbox360() && wmv)) {
 			channels = 2;
 		} else if (pcm) {
@@ -1210,7 +1230,7 @@ public class MEncoderVideo extends Player {
 			// Set audio codec and bitrate if audio is being transcoded
 			String acodec   = "";
 			String abitrate = "";
-			if (!ac3Remux && !dtsRemux && !isTranscodeToAAC) {
+			if (!ac3Remux && !aacRemux && !dtsRemux) {
 				// Set the audio codec used by Lavc
 				if (!combinedCustomOptions.contains("acodec=")) {
 					acodec = ":acodec=";
@@ -1218,7 +1238,7 @@ public class MEncoderVideo extends Player {
 						acodec += "wmav2";
 					} else {
 						acodec = cbr_settings + acodec;
-						if (params.mediaRenderer.isTranscodeToAAC()) {
+						if (isTranscodeToAAC) {
 							acodec += "libfaac";
 						} else if (configuration.isMencoderAc3Fixed()) {
 							acodec += "ac3_fixed";
@@ -1233,6 +1253,8 @@ public class MEncoderVideo extends Player {
 					abitrate = ":abitrate=";
 					if (wmv && !params.mediaRenderer.isXbox360()) {
 						abitrate += "448";
+					} else if (isTranscodeToAAC) {
+						abitrate += CodecUtil.getAACBitrate(configuration, params.aid);
 					} else {
 						abitrate += CodecUtil.getAC3Bitrate(configuration, params.aid);
 					}
@@ -1266,7 +1288,7 @@ public class MEncoderVideo extends Player {
 				audioType = "dts";
 			} else if (pcm || encodedAudioPassthrough) {
 				audioType = "pcm";
-			} else if (params.mediaRenderer.isTranscodeToAAC()) {
+			} else if (aacRemux || isTranscodeToAAC) {
 				audioType = "aac";
 			}
 
@@ -1981,6 +2003,9 @@ public class MEncoderVideo extends Player {
 		if (isNotBlank(vfValue)) {
 			cmdList.add("-vf");
 			cmdList.add(vfValue);
+		} else {
+			cmdList.add("-vf");
+			cmdList.add("scale,format=yv12");
 		}
 
 		if (configuration.getMencoderMT() && !avisynth && !isDVD && !(media.getCodecV() != null && (media.getCodecV().startsWith("mpeg2")))) {
@@ -2157,7 +2182,7 @@ public class MEncoderVideo extends Player {
 			}
 		}
 
-		if ((pcm || dtsRemux || encodedAudioPassthrough || ac3Remux) || (configuration.isMencoderNoOutOfSync() && !disableMc0AndNoskip)) {
+		if ((pcm || dtsRemux || encodedAudioPassthrough || aacRemux || ac3Remux) || (configuration.isMencoderNoOutOfSync() && !disableMc0AndNoskip)) {
 			if (configuration.isFix25FPSAvMismatch()) {
 				cmdList.add("-mc");
 				cmdList.add("0.005");
@@ -2178,7 +2203,7 @@ public class MEncoderVideo extends Player {
 
 		// Force srate because MEncoder doesn't like anything other than 48khz for AC-3
 		String rate = "" + params.mediaRenderer.getTranscodedVideoAudioSampleRate();
-		if (!pcm && !dtsRemux && !ac3Remux && !encodedAudioPassthrough) {
+		if (!pcm && !dtsRemux && !aacRemux && !ac3Remux && !encodedAudioPassthrough) {
 			cmdList.add("-af");
 			String af = "lavcresample=" + rate;
 			if (configuration.isMEncoderNormalizeVolume()) {
@@ -2212,7 +2237,7 @@ public class MEncoderVideo extends Player {
 			}
 
 			if (params.avidemux) {
-				pipe = new PipeProcess("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || encodedAudioPassthrough || ac3Remux) ? null : params);
+				pipe = new PipeProcess("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || encodedAudioPassthrough || aacRemux || ac3Remux) ? null : params);
 				params.input_pipes[0] = pipe;
 
 				cmdList.add("-o");
@@ -2336,7 +2361,7 @@ public class MEncoderVideo extends Player {
 					"-mc", (dtsRemux || encodedAudioPassthrough) ? "0.1" : "0",
 					"-noskip",
 					(aid == null) ? "-quiet" : "-aid", (aid == null) ? "-quiet" : aid,
-					"-oac", (ac3Remux || dtsRemux || encodedAudioPassthrough) ? "copy" : "pcm",
+					"-oac", (aacRemux || ac3Remux || dtsRemux || encodedAudioPassthrough) ? "copy" : "pcm",
 					(isNotBlank(mixer) && !channels_filter_present) ? "-af" : "-quiet", (isNotBlank(mixer) && !channels_filter_present) ? mixer : "-quiet",
 					"-srate", "48000",
 					"-o", ffAudioPipe.getInputPipe()
@@ -2385,6 +2410,8 @@ public class MEncoderVideo extends Player {
 					String audioType;
 					if (ac3Remux) {
 						audioType = "A_AC3";
+					} else if (aacRemux) {
+						audioType = "A_AAC";
 					} else if (dtsRemux) {
 						if (params.mediaRenderer.isMuxDTSToMpeg()) {
 							// Renderer can play proper DTS track

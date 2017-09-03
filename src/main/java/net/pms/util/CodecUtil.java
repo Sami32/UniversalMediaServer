@@ -76,6 +76,18 @@ public class CodecUtil {
 		return codecs;
 	}
 
+	public static int getAACBitrate(PmsConfiguration configuration, DLNAMediaAudio media) {
+		int defaultBitrate = configuration.getAACAudioBitrate();
+		if (media != null && defaultBitrate >= 192) {
+			if (media.getAudioProperties().getNumberOfChannels() == 2 || configuration.getAudioChannelCount() == 2) {
+				defaultBitrate = 192;
+			} else if (media.getAudioProperties().getNumberOfChannels() == 1) {
+				defaultBitrate = 96;
+			}
+		}
+		return defaultBitrate;
+	}
+
 	public static int getAC3Bitrate(PmsConfiguration configuration, DLNAMediaAudio media) {
 		int defaultBitrate = configuration.getAudioBitrate();
 		if (media != null && defaultBitrate >= 384) {
