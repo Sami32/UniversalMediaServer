@@ -358,6 +358,13 @@ public class FFMpegVideo extends Player {
 				if (!customFFmpegOptions.contains("-c:a ") && !customFFmpegOptions.contains("-codec:a") && !customFFmpegOptions.contains("-acodec")) {
 					transcodeOptions.add("-c:a");
 					transcodeOptions.add("copy");
+					if (renderer.isTranscodeToMP4() && params.aid != null && params.aid.isAACLC()) {
+						transcodeOptions.add("-bsf:a");
+						transcodeOptions.add("aac_adtstoasc");
+					}
+					if (renderer.isTranscodeToMPEGTS()) {
+						transcodeOptions.add("-copyts");
+					}
 				}
 			} else {
 				if (dtsRemux) {
@@ -857,6 +864,24 @@ public class FFMpegVideo extends Player {
 			cmdList.add("fatal");
 		}
 
+		if (renderer.isTranscodeToMPEGTS()) {
+			cmdList.add("-fflags");
+			cmdList.add("+genpts");
+			cmdList.add("-async");
+			cmdList.add("1");
+		}
+
+		// Avoid H.264 transcoding fail, at least when generating a MP4 file with FFmpeg and maybe others
+		if (params.aid == null) {
+			cmdList.add("-f");
+			cmdList.add("lavfi");
+			cmdList.add("-i");
+			cmdList.add("anullsrc");
+		}
+
+		if (params.aid != null && (params.aid.isAACLC() && aacRemux || params.aid.isAC3() && ac3Remux || params.aid.isDTS() && dtsRemux)) {
+			cmdList.add("-noaccurate_seek");
+		}
 		if (params.timeseek > 0) {
 			cmdList.add("-ss");
 			cmdList.add(String.valueOf(params.timeseek));
@@ -1109,6 +1134,10 @@ public class FFMpegVideo extends Player {
 					channels = 2;
 				} else if (params.aid != null && params.aid.getAudioProperties().getNumberOfChannels() > configuration.getAudioChannelCount()) {
 					channels = configuration.getAudioChannelCount();
+				} else if (params.aid != null) {
+					channels = params.aid.getAudioProperties().getNumberOfChannels();
+				} else {
+					channels = 2;
 				}
 
 				if (!customFFmpegOptions.contains("-ac ") && !customFFmpegOptions.contains("ocl=") && channels > 0) {
@@ -1129,13 +1158,18 @@ public class FFMpegVideo extends Player {
 					cmdList.add("-ar");
 					cmdList.add("" + params.mediaRenderer.getTranscodedVideoAudioSampleRate());
 				}
+
+				if (!customFFmpegOptions.contains("-ac ") && !customFFmpegOptions.contains("ocl=") && channels > 0) {
+					cmdList.add("-ac");
+					cmdList.add(String.valueOf(channels));
+				}
 			}
 
 			// Add the output options (-f, -c:a, -c:v, etc.)
 			cmdList.addAll(getVideoTranscodeOptions(dlna, media, params));
 
 			// Add custom options
-			if (StringUtils.isNotEmpty(customFFmpegOptions)) {
+			if (isNotBlank(customFFmpegOptions)) {
 				parseOptions(customFFmpegOptions, cmdList);
 			}
 		}
@@ -1266,14 +1300,14 @@ public class FFMpegVideo extends Player {
 				cmdListDTS.add("1");
 			}
 
+			cmdListDTS.add("-c:a");
+			cmdListDTS.add("copy");
+
 			cmdListDTS.add("-ac");
 			cmdListDTS.add("2");
 
 			cmdListDTS.add("-f");
 			cmdListDTS.add("dts");
-
-			cmdListDTS.add("-c:a");
-			cmdListDTS.add("copy");
 
 			cmdListDTS.add(ffAudioPipe.getInputPipe());
 
