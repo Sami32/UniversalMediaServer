@@ -734,12 +734,6 @@ public class PMS {
 			LOGGER.info("Detected Kerio firewall");
 		}
 
-		// Force use of specific DVR-MS muxer when it's installed in the right place
-		File dvrsMsffmpegmuxer = new File("win32/dvrms/ffmpeg_MPGMUX.exe");
-		if (dvrsMsffmpegmuxer.exists()) {
-			configuration.setFfmpegAlternativePath(dvrsMsffmpegmuxer.getAbsolutePath());
-		}
-
 		// Disable jaudiotagger logging
 		LogManager.getLogManager().readConfiguration(new ByteArrayInputStream("org.jaudiotagger.level=OFF".getBytes(StandardCharsets.US_ASCII)));
 

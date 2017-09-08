@@ -45,6 +45,8 @@ public class MPG extends Format {
 			"avi",
 			"div",
 			"divx",
+			"dvr",
+			"dvr-ms",
 			"ismv",
 			"m2p",
 			"m2t",

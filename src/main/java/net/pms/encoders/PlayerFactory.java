@@ -136,10 +136,6 @@ public final class PlayerFactory {
 		registerPlayer(new VideoLanAudioStreaming());
 		registerPlayer(new VideoLanVideoStreaming());
 
-		if (Platform.isWindows()) {
-			registerPlayer(new FFmpegDVRMSRemux());
-		}
-
 		registerPlayer(new DCRaw());
 
 		// Sort the players according to the configuration settings

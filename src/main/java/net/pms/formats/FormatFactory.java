@@ -50,7 +50,6 @@ public final class FormatFactory {
 		new BMP(),
 		new DSDAudio(),
 		new DTS(),
-		new DVRMS(),
 		new EAC3(),
 		new FLAC(),
 		new GIF(),

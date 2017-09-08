@@ -144,7 +144,6 @@ public class PmsConfiguration extends RendererConfiguration {
 	protected static final String KEY_DYNAMIC_PLS_SAVE_PATH = "dynamic_playlist_save_path";
 	protected static final String KEY_ENCODED_AUDIO_PASSTHROUGH = "encoded_audio_passthrough";
 	protected static final String KEY_ENGINES = "engines";
-	protected static final String KEY_FFMPEG_ALTERNATIVE_PATH = "alternativeffmpegpath"; // TODO: FFmpegDVRMSRemux will be removed and DVR-MS will be transcoded
 	protected static final String KEY_FFMPEG_AVISYNTH_CONVERT_FPS = "ffmpeg_avisynth_convertfps";
 	protected static final String KEY_FFMPEG_AVISYNTH_INTERFRAME = "ffmpeg_avisynth_interframe";
 	protected static final String KEY_FFMPEG_AVISYNTH_INTERFRAME_GPU = "ffmpeg_avisynth_interframegpu";
@@ -2226,14 +2225,6 @@ public class PmsConfiguration extends RendererConfiguration {
 
 	public void setMencoderIntelligentSync(boolean value) {
 		configuration.setProperty(KEY_MENCODER_INTELLIGENT_SYNC, value);
-	}
-
-	public String getFfmpegAlternativePath() {
-		return getString(KEY_FFMPEG_ALTERNATIVE_PATH, null);
-	}
-
-	public void setFfmpegAlternativePath(String value) {
-		configuration.setProperty(KEY_FFMPEG_ALTERNATIVE_PATH, value);
 	}
 
 	public boolean getSkipLoopFilterEnabled() {

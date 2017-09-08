@@ -28,7 +28,6 @@ import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.LibMediaInfoParser;
-import net.pms.formats.DVRMS;
 import net.pms.formats.Format;
 import net.pms.formats.ISO;
 import net.pms.formats.MKV;
@@ -182,17 +181,11 @@ public class FormatRecognitionTest {
 		RendererConfiguration conf = RendererConfiguration.getRendererConfigurationByName("Playstation 3");
 		assertNotNull("Renderer named \"Playstation 3\" found.", conf);
 
-		// DVRMS: false
-		DLNAMediaInfo info = new DLNAMediaInfo();
-		info.setContainer("dvr");
-		Format format = new DVRMS();
-		format.match("test.dvr");
-		assertFalse("isCompatible() gives the outcome false for DVRMS",	conf.isCompatible(info, format, configuration));
 
 		// ISO: false
-		info = new DLNAMediaInfo();
+		DLNAMediaInfo info = new DLNAMediaInfo();
 		info.setContainer("iso");
-		format = new ISO();
+		Format format = new ISO();
 		format.match("test.iso");
 		assertFalse("isCompatible() gives the outcome false for ISO", conf.isCompatible(info, format, configuration));
 
