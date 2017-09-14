@@ -676,6 +676,8 @@ public class LibMediaInfoParser {
 			} else {
 				format = FormatConfiguration.AAC_MAIN;
 			}
+		} else if (value.equals("00001000-0000-FF00-8000-00AA00389B71") || value.equals("aac") && media.getContainer().equals(FormatConfiguration.AVI)) {
+			format = FormatConfiguration.AAC_LC;
 		} else if (value.startsWith("adpcm")) {
 			format = FormatConfiguration.ADPCM;
 		} else if (value.equals("pcm") || (value.equals("1") && (audio.getCodecA() == null || !audio.getCodecA().equals(FormatConfiguration.DTS) || !audio.getCodecA().equals(FormatConfiguration.DTSHD)))) {
@@ -749,6 +751,8 @@ public class LibMediaInfoParser {
 			format = FormatConfiguration.ATRAC;
 		} else if (value.startsWith("atrac")) {
 			format = FormatConfiguration.ATRAC;
+		} else if (value.equals("nellymoser")) {
+			format = FormatConfiguration.NELLYMOSER;
 		} else if (value.equals("jpeg")) {
 			format = FormatConfiguration.JPG;
 		} else if (value.equals("png")) {

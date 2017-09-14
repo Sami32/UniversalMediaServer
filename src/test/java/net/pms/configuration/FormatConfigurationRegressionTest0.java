@@ -842,4 +842,12 @@ public class FormatConfigurationRegressionTest0 {
     org.junit.Assert.assertTrue("'" + str0 + "' != '" + "qcelp"+ "'", str0.equals("qcelp"));
   }
 
+  @Test
+  public void testNELLYMOSER() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.NELLYMOSER;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "nellymoser"+ "'", str0.equals("nellymoser"));
+  }
+
 }
