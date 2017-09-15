@@ -1355,9 +1355,6 @@ public class FFMpegVideo extends Player {
 			cmdListDTS.add("-c:a");
 			cmdListDTS.add("copy");
 
-			cmdListDTS.add("-ac");
-			cmdListDTS.add("2");
-
 			cmdListDTS.add("-f");
 			cmdListDTS.add("dts");
 
