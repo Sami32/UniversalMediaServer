@@ -512,6 +512,9 @@ public class FFMpegVideo extends Player {
 				} else {
 					transcodeOptions.add("vob");
 				}
+				// https://trac.ffmpeg.org/ticket/6375
+				transcodeOptions.add("-max_muxing_queue_size");
+				transcodeOptions.add("9999");
 			}
 		}
 
@@ -918,7 +921,7 @@ public class FFMpegVideo extends Player {
 		if (LOGGER.isTraceEnabled()) { // Set -loglevel in accordance with LOGGER setting
 			cmdList.add("info"); // Could be changed to "verbose" or "debug" if "info" level is not enough
 		} else {
-			cmdList.add("fatal");
+			cmdList.add("panic");
 		}
 
 		if (renderer.isTranscodeToMPEGTS()) {
@@ -1018,6 +1021,8 @@ public class FFMpegVideo extends Player {
 		String frameRateNumber = media.getValidFps(false);
 
 		// Input filename
+		cmdList.add("-analyzeduration");
+		cmdList.add("12000000");
 		cmdList.add("-i");
 		if (avisynth && !filename.toLowerCase().endsWith(".iso")) {
 			File avsFile = AviSynthFFmpeg.getAVSScript(filename, params.sid, params.fromFrame, params.toFrame, frameRateRatio, frameRateNumber, configuration);
@@ -1144,6 +1149,8 @@ public class FFMpegVideo extends Player {
 			cmdList.add("-map");
 			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.aid)));
 		}
+		cmdList.add("-map_chapters");
+		cmdList.add("-1");
 
 		// Now configure the output streams
 
