@@ -500,6 +500,8 @@ public class LibMediaInfoParser {
 			format = FormatConfiguration.WEBM;
 		} else if (value.equals("qt") || value.equals("quicktime")) {
 			format = FormatConfiguration.MOV;
+		} else if (value.equals("wtv")) {
+			format = FormatConfiguration.ASF;
 		} else if (
 				value.contains("isom") ||
 				value.startsWith("mp4") && !value.startsWith("mp4a")||

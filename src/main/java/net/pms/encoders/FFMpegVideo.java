@@ -143,10 +143,10 @@ public class FFMpegVideo extends Player {
 			scaleHeight > renderer.getMaxVideoHeight() ||
 			scaleWidth  > renderer.getMaxVideoWidth() ||
 			// such low resolution video is not supported by most of the renderers
-			media.getWidth() < 32 ||
-			media.getHeight() < 32 ||
+			media.getWidth() > 0 && media.getWidth() < 32 ||
+			media.getWidth() > 0 && media.getHeight() < 32 ||
 			// Do not rescale for SD video and higher
-			!renderer.isRescaleByRenderer() && renderer.isMaximumResolutionSpecified() && media.getWidth() < 720
+			!renderer.isRescaleByRenderer() && renderer.isMaximumResolutionSpecified() && media.getWidth() > 0 && media.getWidth() < 720
 		) {
 			scaleHeight = renderer.getMaxVideoHeight();
 			scaleWidth  = renderer.getMaxVideoWidth();
@@ -932,7 +932,7 @@ public class FFMpegVideo extends Player {
 		}
 
 		// Avoid H.264 transcoding fail, at least when generating a MP4 file with FFmpeg and maybe others
-		if (params.aid == null) {
+		if (params.aid == null && !filename.toLowerCase().endsWith(".wtv")) {
 			cmdList.add("-f");
 			cmdList.add("lavfi");
 			cmdList.add("-i");

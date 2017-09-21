@@ -972,6 +972,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 				if (
 					renderer.isKeepAspectRatio() &&
+					StringUtils.isNotBlank(media.getAspectRatioContainer()) &&
 					!"16:9".equals(media.getAspectRatioContainer())
 				) {
 					isIncompatible = true;
