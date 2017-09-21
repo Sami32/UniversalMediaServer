@@ -1222,7 +1222,7 @@ public class PmsConfiguration extends RendererConfiguration {
 	 * @return True if subtitles should be disabled, false otherwise.
 	 */
 	public boolean isDisableSubtitles() {
-		return getBoolean(KEY_DISABLE_SUBTITLES, false);
+		return getBoolean(KEY_DISABLE_SUBTITLES, true);
 	}
 
 	/**
