@@ -115,7 +115,7 @@ public class LibMediaInfoParser {
 				}
 
 				value = MI.Get(general, 0, "Title");
-				if (!value.isEmpty()) {
+				if (isNotBlank(value)) {
 					media.setFileTitleFromMetadata(value);
 				}
 
@@ -299,8 +299,9 @@ public class LibMediaInfoParser {
 				if (subTracks > 0) {
 					for (int i = 0; i < subTracks; i++) {
 						currentSubTrack = new DLNAMediaSubtitle();
-						if (isNotBlank(MI.Get(text, i, "CodecID"))) {
-							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "CodecID")));
+						value = MI.Get(text, i, "CodecID");
+						if (isNotBlank(value)) {
+							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(value));
 						} else {
 							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "Format")));
 						}
@@ -315,17 +316,24 @@ public class LibMediaInfoParser {
 						}
 						addSub(currentSubTrack, media);
 					}
-				}
-
-				// Teletext
-				int teletextTracks = MI.Count_Get(other);
-				if (teletextTracks > 0) {
-					for (int i = 0; i < teletextTracks; i++) {
-						currentSubTrack = new DLNAMediaSubtitle();
-						if (isNotBlank(MI.Get(other, i, "Format"))) {
-							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(other, i, "Format")));
+				} else { // Check for teletext
+					subTracks = MI.Count_Get(other);
+					if (subTracks > 0) {
+						for (int i = 0; i < subTracks; i++) {
+							currentSubTrack = new DLNAMediaSubtitle();
+							value = MI.Get(other, i, "Format");
+							if (value.startsWith("Teletext")) {
+								currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(value));
+								currentSubTrack.setLang(getLang(MI.Get(other, i, "Language")));
+								value = MI.Get(other, i, "ID");
+								if (isNotBlank(value) && value.contains("-")) {
+									currentSubTrack.setId(getSpecificID(value));
+								} else {
+									currentSubTrack.setId(media.getSubtitleTracksList().size());
+								}
+								addSub(currentSubTrack, media);
+							}
 						}
-						addSub(currentSubTrack, media);
 					}
 				}
 

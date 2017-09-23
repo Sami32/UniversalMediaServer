@@ -52,7 +52,7 @@ public enum SubtitleType {
 	EIA608      (16, "EIA-608",                                   list(),             list("EIA-608", "c608"),                                          type.TEXT),
 	EIA708      (17, "EIA-708",                                   list(),             list("EIA-708", "c708"),                                          type.TEXT),
 	KATE        (18, "Kate",                                      list(),             list("Kate"),                                                     type.TEXT),
-	TELETEXT    (19, "Teletext",                                  list(),             list("Teletext"),                                                 type.TEXT);
+	TELETEXT    (19, "Teletext",                                  list(),             list("Teletext", "Teletext Subtitle"),                            type.TEXT);
 
 	public enum type {TEXT, PICTURE, UNDEF}
 	private final int index;
