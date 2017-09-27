@@ -348,7 +348,7 @@ public class AudioProperties {
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		if (getBitRate() != 8000) {
-			result.append("Bitrate: ").append(getBitRate());
+			result.append(", Bitrate: ").append(getBitRate());
 		}
 		if (getNumberOfChannels() == 1) {
 			result.append(", Channel: ").append(getNumberOfChannels());

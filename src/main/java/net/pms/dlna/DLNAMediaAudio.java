@@ -586,7 +586,7 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 			result.append(", Raw Bitrate Mode: ").append(getRawBitRateMode());
 		}
 		if (getAudioProperties() != null) {
-			result.append(", ").append(getAudioProperties());
+			result.append(getAudioProperties());
 		}
 
 		if (isNotBlank(getArtist())) {
