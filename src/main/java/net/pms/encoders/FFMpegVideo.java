@@ -509,6 +509,10 @@ public class FFMpegVideo extends Player {
 					transcodeOptions.add("isml+frag_keyframe");
 				} else if (renderer.isTranscodeToMPEGTS()) {
 					transcodeOptions.add("mpegts");
+				} else if (renderer.isTranscodeToMKV()) {
+					transcodeOptions.add("matroska");
+					transcodeOptions.add("-map_metadata"); // https://trac.ffmpeg.org/ticket/2474
+					transcodeOptions.add("-1");
 				} else {
 					transcodeOptions.add("vob");
 				}
@@ -924,7 +928,7 @@ public class FFMpegVideo extends Player {
 			cmdList.add("panic");
 		}
 
-		if (renderer.isTranscodeToMPEGTS()) {
+		if (!renderer.isTranscodeToMP4()) {
 			cmdList.add("-fflags");
 			cmdList.add("+genpts");
 			cmdList.add("-async");

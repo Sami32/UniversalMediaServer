@@ -117,6 +117,10 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	protected static final String DEPRECATED_H264TSAC3 = "H264TSAC3";
 
 	// Current video transcoding options
+	protected static final String MKVH264AAC = "MKV-H264-AAC";
+	protected static final String MKVH264AC3 = "MKV-H264-AC3";
+	protected static final String MKVH265AAC = "MKV-H265-AAC";
+	protected static final String MKVH265AC3 = "MKV-H265-AC3";
 	protected static final String MP4H264AAC = "MP4-H264-AAC";
 	protected static final String MP4H264AC3 = "MP4-H264-AC3";
 	protected static final String MP4H265AAC = "MP4-H265-AAC";
@@ -1172,6 +1176,21 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return getVideoTranscode().equals(WMV);
 	}
 
+	/**
+	 * @return whether to use the Matroska container for transcoded video.
+	 */
+	public boolean isTranscodeToMKV() {
+		return isTranscodeToMKVH264AAC() ||
+			isTranscodeToMKVH264AC3() ||
+			isTranscodeToMKVH265AAC() ||
+			isTranscodeToMKVH265AC3() ||
+			isTranscodeToMKVH264DTS() ||
+			isTranscodeToMKVH265DTS();
+	}
+
+	/**
+	 * @return whether to use the MP4 container for transcoded video.
+	 */
 	public boolean isTranscodeToMP4() {
 		return isTranscodeToMP4H264AAC() ||
 			isTranscodeToMP4H264AC3() ||
@@ -1180,18 +1199,17 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	}
 
 	public boolean isTranscodeToMPEGPSMPEG2AC3() {
-		String videoTranscode = getVideoTranscode();
-		return videoTranscode.equals(MPEGPSMPEG2AC3) || videoTranscode.equals(DEPRECATED_MPEGAC3) || videoTranscode.equals(DEPRECATED_MPEGPSAC3);
+		return getVideoTranscode().equals(MPEGPSMPEG2AC3) ||
+			getVideoTranscode().equals(DEPRECATED_MPEGAC3) ||
+			getVideoTranscode().equals(DEPRECATED_MPEGPSAC3);
 	}
 
 	public boolean isTranscodeToMPEGTSMPEG2AC3() {
-		String videoTranscode = getVideoTranscode();
-		return videoTranscode.equals(MPEGTSMPEG2AC3) || videoTranscode.equals(DEPRECATED_MPEGTSAC3);
+		return getVideoTranscode().equals(MPEGTSMPEG2AC3) || getVideoTranscode().equals(DEPRECATED_MPEGTSAC3);
 	}
 
 	public boolean isTranscodeToMPEGTSH264AC3() {
-		String videoTranscode = getVideoTranscode();
-		return videoTranscode.equals(MPEGTSH264AC3) || videoTranscode.equals(DEPRECATED_H264TSAC3);
+		return getVideoTranscode().equals(MPEGTSH264AC3) || getVideoTranscode().equals(DEPRECATED_H264TSAC3);
 	}
 
 	public boolean isTranscodeToMPEGTSH264AAC() {
@@ -1222,43 +1240,85 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return getVideoTranscode().equals(MPEGTSH265AC3);
 	}
 
+	public boolean isTranscodeToMKVH264AAC() {
+		return getVideoTranscode().equals(MKVH264AAC);
+	}
+
+	public boolean isTranscodeToMKVH264AC3() {
+		return getVideoTranscode().equals(MKVH264AC3);
+	}
+
+	public boolean isTranscodeToMKVH265AAC() {
+		return getVideoTranscode().equals(MKVH265AAC);
+	}
+
+	public boolean isTranscodeToMKVH265AC3() {
+		return getVideoTranscode().equals(MKVH265AC3);
+	}
+
 	/**
-	 * @return whether to use the AC-3 audio codec for transcoded video
+	 * @return whether to use the AC-3 audio codec for transcoded video.
 	 */
 	public boolean isTranscodeToAC3() {
-		return isTranscodeToMPEGPSMPEG2AC3() || isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGTSH264AC3() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMP4H264AC3() || isTranscodeToMP4H265AC3();
+		return isTranscodeToMPEGPSMPEG2AC3() ||
+			isTranscodeToMPEGTSMPEG2AC3() ||
+			isTranscodeToMPEGTSH264AC3() ||
+			isTranscodeToMPEGTSH265AC3() ||
+			isTranscodeToMP4H264AC3() ||
+			isTranscodeToMP4H265AC3() ||
+			isTranscodeToMKVH264AC3() ||
+			isTranscodeToMKVH265AC3();
 	}
 
 	/**
-	 * @return whether to use the AAC audio codec for transcoded video
+	 * @return whether to use the AAC audio codec for transcoded video.
 	 */
 	public boolean isTranscodeToAAC() {
-		return isTranscodeToMPEGTSH264AAC() || isTranscodeToMPEGTSH265AAC() || isTranscodeToMP4H264AAC() || isTranscodeToMP4H265AAC();
+		return isTranscodeToMPEGTSH264AAC() ||
+			isTranscodeToMPEGTSH265AAC() ||
+			isTranscodeToMP4H264AAC() ||
+			isTranscodeToMP4H265AAC() ||
+			isTranscodeToMKVH264AAC() ||
+			isTranscodeToMKVH265AAC();
 	}
 
 	/**
-	 * @return whether to use the H.264 video codec for transcoded video
+	 * @return whether to use the H.264 video codec for transcoded video.
 	 */
 	public boolean isTranscodeToH264() {
-		return isTranscodeToMPEGTSH264AAC() || isTranscodeToMPEGTSH264AC3() || isTranscodeToMP4H264AAC() || isTranscodeToMP4H264AC3();
+		return isTranscodeToMPEGTSH264AAC() ||
+			isTranscodeToMPEGTSH264AC3() ||
+			isTranscodeToMP4H264AAC() ||
+			isTranscodeToMP4H264AC3() ||
+			isTranscodeToMKVH264AAC() ||
+			isTranscodeToMKVH264AC3();
 	}
 
 	/**
-	 * @return whether to use the H.265 video codec for transcoded video
+	 * @return whether to use the H.265 video codec for transcoded video.
 	 */
 	public boolean isTranscodeToH265() {
-		return isTranscodeToMPEGTSH265AAC() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMP4H265AAC() || isTranscodeToMP4H265AC3();
+		return isTranscodeToMPEGTSH265AAC() ||
+			isTranscodeToMPEGTSH265AC3() ||
+			isTranscodeToMP4H265AAC() ||
+			isTranscodeToMP4H265AC3() ||
+			isTranscodeToMKVH265AAC() ||
+			isTranscodeToMKVH265AC3();
 	}
 
 	/**
-	 * @return whether to use the MPEG-TS container for transcoded video
+	 * @return whether to use the MPEG-TS container for transcoded video.
 	 */
 	public boolean isTranscodeToMPEGTS() {
-		return isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGTSH264AC3() || isTranscodeToMPEGTSH264AAC() || isTranscodeToMPEGTSH265AC3() || isTranscodeToMPEGTSH265AAC();
+		return isTranscodeToMPEGTSMPEG2AC3() ||
+			isTranscodeToMPEGTSH264AC3() ||
+			isTranscodeToMPEGTSH264AAC() ||
+			isTranscodeToMPEGTSH265AC3() ||
+			isTranscodeToMPEGTSH265AAC();
 	}
 
 	/**
-	 * @return whether to use the MPEG-2 video codec for transcoded video
+	 * @return whether to use the MPEG-2 video codec for transcoded video.
 	 */
 	public boolean isTranscodeToMPEG2() {
 		return isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGPSMPEG2AC3();
@@ -1281,7 +1341,7 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	}
 
 	/**
-	 * @return whether to transcode H.264 video if it exceeds level 4.1
+	 * @return whether to transcode H.264 video if it exceeds level 4.1.
 	 */
 	public boolean isH264Level41Limited() {
 		return getBoolean(H264_L41_LIMITED, true);
@@ -1322,7 +1382,15 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		if (isUseMediaInfo()) {
 			// Use the supported information in the configuration to determine the transcoding mime type.
 			if (HTTPResource.VIDEO_TRANSCODE.equals(mimeType)) {
-				if (isTranscodeToMP4H264AAC()) {
+				if (isTranscodeToMKVH264AAC()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MKV,    FormatConfiguration.H264,  FormatConfiguration.AAC_LC);
+				} else if (isTranscodeToMKVH264AC3()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MKV,    FormatConfiguration.H264,  FormatConfiguration.AC3);
+				} else if (isTranscodeToMKVH265AAC()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MKV,    FormatConfiguration.H265,  FormatConfiguration.AAC_LC);
+				} else if (isTranscodeToMKVH265AC3()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MKV,    FormatConfiguration.H265,  FormatConfiguration.AC3);
+				} else if (isTranscodeToMP4H264AAC()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H264,  FormatConfiguration.AAC_LC);
 				} else if (isTranscodeToMP4H264AC3()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MP4,    FormatConfiguration.H264,  FormatConfiguration.AC3);
@@ -1384,6 +1452,9 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 				} else if (isTranscodeToMP4()) {
 					// Default video transcoding mime type
 					matchedMimeType = HTTPResource.MP4_TYPEMIME;
+				} else if (isTranscodeToMKV()) {
+					// Default video transcoding mime type
+					matchedMimeType = HTTPResource.MATROSKA_TYPEMIME;
 				} else {
 					// Default video transcoding mime type
 					matchedMimeType = HTTPResource.MPEG_TYPEMIME;

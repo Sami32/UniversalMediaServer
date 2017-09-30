@@ -2674,7 +2674,7 @@ public class MEncoderVideo extends Player {
 
 	@Override
 	public boolean isPlayerCompatible(RendererConfiguration mediaRenderer) {
-		return mediaRenderer != null && !mediaRenderer.isTranscodeToMP4();
+		return mediaRenderer != null && !mediaRenderer.isTranscodeToMP4() && !mediaRenderer.isTranscodeToMKV();
 	}
 
 	/**

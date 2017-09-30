@@ -442,6 +442,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	public String getDlnaContentFeatures(RendererConfiguration mediaRenderer) {
 		// TODO: Determine renderer's correct localization value
 		int localizationValue = 1;
+		String dlnaOrgPsFlags = null;
 		String dlnaOrgPnFlags = getDlnaOrgPnFlags(mediaRenderer, localizationValue);
 		if (
 			getRendererMimeType(mediaRenderer).equals(MATROSKA_TYPEMIME) &&
@@ -2615,8 +2616,10 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 					addAttribute(sb, "bitrate", media.getRealBitrate() / 8);
 					if (firstAudioTrack != null) {
-						if (firstAudioTrack.getAudioProperties().getNumberOfChannels() > 0) {
+						if (firstAudioTrack.getAudioProperties().getNumberOfChannels() > 0 && firstAudioTrack.getAudioProperties().getNumberOfChannels() <= configurationSpecificToRenderer.getAudioChannelCount()) {
 							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getAudioProperties().getNumberOfChannels());
+						} else {
+							addAttribute(sb, "nrAudioChannels", configurationSpecificToRenderer.getAudioChannelCount());
 						}
 
 						if (firstAudioTrack.getSampleFrequency() != null) {
@@ -2730,7 +2733,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 							transcodedExtension = "_transcoded_to.avi";
 						} else if (mediaRenderer.getCustomFFmpegOptions().contains("-f flv")) {
 							transcodedExtension = "_transcoded_to.flv";
-						} else if (mediaRenderer.getCustomFFmpegOptions().contains("-f matroska")) {
+						} else if (mediaRenderer.isTranscodeToMKV() || mediaRenderer.getCustomFFmpegOptions().contains("-f matroska")) {
 							transcodedExtension = "_transcoded_to.mkv";
 						} else if (mediaRenderer.getCustomFFmpegOptions().contains("-f mov")) {
 							transcodedExtension = "_transcoded_to.mov";
