@@ -367,27 +367,33 @@ public class FFMpegVideo extends Player {
 					!isSubtitlesAndTimeseek
 				)
 			   ) {
-				// AAC-LC and AC-3 remux
+				// AAC-LC, AC-3 and DTS/DTS-HD remux
 				if (
 					!customFFmpegOptions.contains("-c:a ") &&
 					!customFFmpegOptions.contains("-codec:a") &&
 					!customFFmpegOptions.contains("-acodec") &&
 					!customFFmpegOptions.contains("-af ") &&
-					!customFFmpegOptions.contains("-filter:a")
+					!customFFmpegOptions.contains("-filter:a") &&
+					!customFFmpegOptions.contains("-ac ") &&
+					!customFFmpegOptions.contains("-ar ")
 				) {
 					transcodeOptions.add("-c:a");
 					transcodeOptions.add("copy");
-					if (params.aid != null && params.aid.isAACLC()) {
+					if (params.aid.isAACLC()) {
 						transcodeOptions.add("-b:a");
 						transcodeOptions.add(String.valueOf(CodecUtil.getAACBitrate(configuration, params.aid)) + "k");
 					}
-					if (params.aid != null && params.aid.isAC3()) {
+					if (params.aid.isAC3()) {
 						transcodeOptions.add("-b:a");
 						transcodeOptions.add(String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.aid)) + "k");
 					}
 					if (renderer.isTranscodeToMP4() && params.aid != null && params.aid.isAACLC()) {
 						transcodeOptions.add("-bsf:a");
 						transcodeOptions.add("aac_adtstoasc");
+					}
+					if (params.aid.isDTSHD()) {
+						transcodeOptions.add("-bsf:a");
+						transcodeOptions.add("dca_core");
 					}
 				}
 			} else {
@@ -397,14 +403,29 @@ public class FFMpegVideo extends Player {
 				} else if (type() == Format.AUDIO) {
 					// Skip
 				} else if (
-						renderer.isTranscodeToAAC() &&
+						renderer.isTranscodeToDTS() &&
 						!(
 							params.aid != null &&
-							params.aid.isAACLC() &&
-							configuration.isAudioRemuxAACLC() &&
+							(
+								params.aid.isDTS() ||
+								params.aid.isDTSHD()
+							) &&
+							configuration.isAudioRemuxDTS() &&
 							params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
 						)
 					) {
+					if (
+						!customFFmpegOptions.contains("-c:a ") &&
+						!customFFmpegOptions.contains("-codec:a") &&
+						!customFFmpegOptions.contains("-acodec")
+					) {
+						transcodeOptions.add("-bitexact");
+						transcodeOptions.add("-c:a");
+						transcodeOptions.add("dca");
+						transcodeOptions.add("-strict");
+						transcodeOptions.add("experimental");
+					}
+				} else if (renderer.isTranscodeToAAC()  && !(params.aid != null && params.aid.isAACLC() && configuration.isAudioRemuxAACLC())) {
 					if (
 						!customFFmpegOptions.contains("-c:a ") &&
 						!customFFmpegOptions.contains("-codec:a") &&
@@ -755,6 +776,7 @@ public class FFMpegVideo extends Player {
 	}
 
 	protected boolean dtsRemux;
+	protected boolean dtscoreRemux;
 	protected boolean aacRemux;
 	protected boolean ac3Remux;
 
@@ -943,7 +965,7 @@ public class FFMpegVideo extends Player {
 			cmdList.add("anullsrc");
 		}
 
-		if (params.aid != null && (params.aid.isAACLC() && aacRemux || params.aid.isAC3() && ac3Remux || params.aid.isDTS() && dtsRemux)) {
+		if (params.aid != null && (params.aid.isAACLC() && aacRemux || params.aid.isAC3() && ac3Remux || params.aid.isDTS() && dtsRemux || (params.aid.isDTS() || params.aid.isDTSHD()) && dtscoreRemux)) {
 			cmdList.add("-noaccurate_seek");
 		}
 		if (params.timeseek > 0) {
@@ -1019,6 +1041,12 @@ public class FFMpegVideo extends Player {
 			params.aid.isDTS() &&
 			!avisynth() &&
 			renderer.isDTSPlayable() &&
+			params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount();
+
+		dtscoreRemux = configuration.isAudioRemuxDTS() &&
+			params.aid != null &&
+			(params.aid.isDTS() || params.aid.isDTSHD()) &&
+			!avisynth() &&
 			params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount();
 
 		String frameRateRatio = media.getValidFps(true);
@@ -1184,7 +1212,7 @@ public class FFMpegVideo extends Player {
 			String customFFmpegOptions = renderer.getCustomFFmpegOptions();
 
 			// Audio bitrate, sampling and channels
-			if (!aacRemux && !ac3Remux && !dtsRemux && !(type() == Format.AUDIO)) {
+			if (!aacRemux && !ac3Remux && !dtsRemux && !dtscoreRemux && !(type() == Format.AUDIO)) {
 				int channels = 0;
 				if (
 					(
@@ -1205,7 +1233,7 @@ public class FFMpegVideo extends Player {
 					channels = 2;
 				}
 
-				if (!customFFmpegOptions.contains("-b:a") && !customFFmpegOptions.contains("-ab")) {
+				if (!customFFmpegOptions.contains("-b:a") && !customFFmpegOptions.contains("-ab") && !renderer.isTranscodeToDTS()) {
 					cmdList.add("-b:a");
 					if (renderer.isTranscodeToAAC()) {
 						cmdList.add(String.valueOf(CodecUtil.getAACBitrate(configuration, params.aid)) + "k");
@@ -1214,7 +1242,7 @@ public class FFMpegVideo extends Player {
 					}
 				}
 
-				if (!customFFmpegOptions.contains("-ar ")) {
+				if (!customFFmpegOptions.contains("-ar ") && !renderer.isTranscodeToDTS()) {
 					cmdList.add("-ar");
 					cmdList.add("" + params.mediaRenderer.getTranscodedVideoAudioSampleRate());
 				}

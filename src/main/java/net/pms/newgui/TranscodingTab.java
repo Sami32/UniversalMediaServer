@@ -90,6 +90,7 @@ public class TranscodingTab {
 	private JComboBox<String> x264Quality;
 	private JCheckBox aacremux;
 	private JCheckBox ac3remux;
+	private JCheckBox dtsremux;
 	private JCheckBox mpeg2remux;
 	private JCheckBox chapter_support;
 	private JTextField chapter_interval;
@@ -688,6 +689,19 @@ public class TranscodingTab {
 		});
 		builder.add(GuiUtil.getPreferredSizeComponent(forcePCM), FormLayoutUtil.flip(cc.xy(1, 4), colSpec, orientation));
 
+		dtsremux = new JCheckBox(Messages.getString("TrTab2.30"), configuration.isAudioRemuxDTS());
+		dtsremux.setToolTipText(Messages.getString("TrTab2.84") + (Platform.isWindows() ? " " + Messages.getString("TrTab2.21") : "") + "</html>");
+		dtsremux.setEnabled(!configuration.isEncodedAudioPassthrough() && !configuration.isAudioEmbedDtsInPcm());
+		dtsremux.setContentAreaFilled(false);
+		dtsremux.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				configuration.setAudioRemuxDTS((e.getStateChange() == ItemEvent.SELECTED));
+				forceDTSinPCM.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
+			}
+		});
+		builder.add(GuiUtil.getPreferredSizeComponent(dtsremux), FormLayoutUtil.flip(cc.xy(1, 6), colSpec, orientation));
+
 		aacremux = new JCheckBox(Messages.getString("TrTab2.25"), configuration.isAudioRemuxAACLC());
 		aacremux.setToolTipText(Messages.getString("TrTab2.84") + (Platform.isWindows() ? " " + Messages.getString("TrTab2.21") : "") + "</html>");
 		aacremux.setEnabled(!configuration.isEncodedAudioPassthrough());
@@ -697,7 +711,7 @@ public class TranscodingTab {
 				configuration.setAudioRemuxAACLC((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
-		builder.add(GuiUtil.getPreferredSizeComponent(aacremux), FormLayoutUtil.flip(cc.xy(1, 6), colSpec, orientation));
+		builder.add(GuiUtil.getPreferredSizeComponent(aacremux), FormLayoutUtil.flip(cc.xy(1, 8), colSpec, orientation));
 
 		ac3remux = new JCheckBox(Messages.getString("TrTab2.26"), configuration.isAudioRemuxAC3());
 		ac3remux.setToolTipText(Messages.getString("TrTab2.84") + (Platform.isWindows() ? " " + Messages.getString("TrTab2.21") : "") + "</html>");
@@ -708,19 +722,20 @@ public class TranscodingTab {
 				configuration.setAudioRemuxAC3((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
-		builder.add(GuiUtil.getPreferredSizeComponent(ac3remux), FormLayoutUtil.flip(cc.xy(1, 8), colSpec, orientation));
+		builder.add(GuiUtil.getPreferredSizeComponent(ac3remux), FormLayoutUtil.flip(cc.xy(1, 10), colSpec, orientation));
 
 		forceDTSinPCM = new JCheckBox(Messages.getString("TrTab2.28"), configuration.isAudioEmbedDtsInPcm());
 		forceDTSinPCM.setToolTipText(Messages.getString("TrTab2.85") + (Platform.isWindows() ? " " + Messages.getString("TrTab2.21") : "") + "</html>");
 		forceDTSinPCM.setEnabled(!configuration.isEncodedAudioPassthrough());
 		forceDTSinPCM.setContentAreaFilled(false);
-		forceDTSinPCM.addActionListener(new ActionListener() {
+		forceDTSinPCM.addItemListener(new ItemListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				configuration.setAudioEmbedDtsInPcm(forceDTSinPCM.isSelected());
+			public void itemStateChanged(ItemEvent e) {
+				configuration.setAudioEmbedDtsInPcm((e.getStateChange() == ItemEvent.SELECTED));
+				dtsremux.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
 			}
 		});
-		builder.add(GuiUtil.getPreferredSizeComponent(forceDTSinPCM), FormLayoutUtil.flip(cc.xy(1, 10), colSpec, orientation));
+		builder.add(GuiUtil.getPreferredSizeComponent(forceDTSinPCM), FormLayoutUtil.flip(cc.xy(1, 12), colSpec, orientation));
 
 		encodedAudioPassthrough = new JCheckBox(Messages.getString("TrTab2.53"), configuration.isEncodedAudioPassthrough());
 		encodedAudioPassthrough.setToolTipText(Messages.getString("TrTab2.86") + (Platform.isWindows() ? " " + Messages.getString("TrTab2.21") : "") + "</html>");
@@ -729,11 +744,13 @@ public class TranscodingTab {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				configuration.setEncodedAudioPassthrough((e.getStateChange() == ItemEvent.SELECTED));
+				aacremux.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
 				ac3remux.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
+				dtsremux.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
 				forceDTSinPCM.setEnabled((e.getStateChange() != ItemEvent.SELECTED));
 			}
 		});
-		builder.add(GuiUtil.getPreferredSizeComponent(encodedAudioPassthrough), cc.xyw(1, 12, 3));
+		builder.add(GuiUtil.getPreferredSizeComponent(encodedAudioPassthrough), cc.xyw(1, 14, 3));
 
 		builder.addLabel(Messages.getString("TrTab2.31"), FormLayoutUtil.flip(cc.xy(1, 16), colSpec, orientation));
 		aacbitrate = new JTextField("" + configuration.getAACAudioBitrate());

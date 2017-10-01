@@ -104,6 +104,7 @@ public class PmsConfiguration extends RendererConfiguration {
 	protected static final String KEY_AUDIO_EMBED_DTS_IN_PCM = "audio_embed_dts_in_pcm";
 	protected static final String KEY_AUDIO_LANGUAGES = "audio_languages";
 	protected static final String KEY_AUDIO_REMUX_AACLC = "audio_remux_aaclc";
+	protected static final String KEY_AUDIO_REMUX_DTS = "audio_remux_dts";
 	protected static final String KEY_AUDIO_REMUX_AC3 = "audio_remux_ac3";
 	protected static final String KEY_AUDIO_RESAMPLE = "audio_resample";
 	protected static final String KEY_AUDIO_SUB_LANGS = "audio_subtitles_languages";
@@ -2469,6 +2470,14 @@ public class PmsConfiguration extends RendererConfiguration {
 
 	public boolean isAudioRemuxAC3() {
 		return getBoolean(KEY_AUDIO_REMUX_AC3, true);
+	}
+
+	public void setAudioRemuxDTS(boolean value) {
+		configuration.setProperty(KEY_AUDIO_REMUX_DTS, value);
+	}
+
+	public boolean isAudioRemuxDTS() {
+		return getBoolean(KEY_AUDIO_REMUX_DTS, false);
 	}
 
 	public void setMencoderRemuxMPEG2(boolean value) {
