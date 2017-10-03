@@ -850,4 +850,20 @@ public class FormatConfigurationRegressionTest0 {
     org.junit.Assert.assertTrue("'" + str0 + "' != '" + "nellymoser"+ "'", str0.equals("nellymoser"));
   }
 
+  @Test
+  public void testMPEG4ASP() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.MPEG4ASP;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "mpeg4asp"+ "'", str0.equals("mpeg4asp"));
+  }
+
+  @Test
+  public void testMPEG4SP() throws Throwable {
+    java.lang.String str0 = net.pms.configuration.FormatConfiguration.MPEG4SP;
+
+    // Regression assertion (captures the current behavior of the code)
+    org.junit.Assert.assertTrue("'" + str0 + "' != '" + "mpeg4sp"+ "'", str0.equals("mpeg4sp"));
+  }
+
 }

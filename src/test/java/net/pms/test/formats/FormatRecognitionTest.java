@@ -129,7 +129,7 @@ public class FormatRecognitionTest {
 		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
 		audioCodes.add(audio);
 		info.setAudioTracksList(audioCodes);
-		info.setCodecV("mp4");
+		info.setCodecV("mpeg4sp");
 		Format format = new MPG();
 		format.match("test.avi");
 		assertEquals("PS3 is compatible with MPG", true,

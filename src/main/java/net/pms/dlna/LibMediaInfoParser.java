@@ -20,6 +20,7 @@ import net.pms.util.FileUtil;
 import net.pms.util.UnknownFormatException;
 import org.apache.commons.codec.binary.Base64;
 import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +92,7 @@ public class LibMediaInfoParser {
 				media.setStereoscopy(MI.Get(general, 0, "StereoscopicLayout"));
 				media.setTruncated(getTruncated(MI.Get(general, 0, "IsTruncated")));
 				value = MI.Get(general, 0, "Cover_Data");
-				if (!value.isEmpty()) {
+				if (isNotBlank(value)) {
 					try {
 						media.setThumb(DLNAThumbnail.toThumbnail(
 							new Base64().decode(value.getBytes(StandardCharsets.US_ASCII)),
@@ -115,7 +116,7 @@ public class LibMediaInfoParser {
 				}
 
 				value = MI.Get(general, 0, "Title");
-				if (!value.isEmpty()) {
+				if (isNotBlank(value)) {
 					media.setFileTitleFromMetadata(value);
 				}
 
@@ -135,6 +136,7 @@ public class LibMediaInfoParser {
 						} else {
 							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "Format"), file);
 							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "Format_Version"), file);
+							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "Format_Profile"), file);
 							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "CodecID"), file);
 							media.setWidth(getPixelValue(MI.Get(video, i, "Width")));
 							media.setHeight(getPixelValue(MI.Get(video, i, "Height")));
@@ -162,17 +164,17 @@ public class LibMediaInfoParser {
 							media.setReferenceFrameCount(getReferenceFrameCount(MI.Get(video, i, "Format_Settings_RefFrames/String")));
 							media.setVideoTrackTitleFromMetadata(MI.Get(video, i, "Title"));
 							value = MI.Get(video, i, "Format_Settings_QPel");
-							if (!value.isEmpty()) {
+							if (isNotBlank(value)) {
 								media.putExtra(FormatConfiguration.MI_QPEL, value);
 							}
 
 							value = MI.Get(video, i, "Format_Settings_GMC");
-							if (!value.isEmpty()) {
+							if (isNotBlank(value)) {
 								media.putExtra(FormatConfiguration.MI_GMC, value);
 							}
 
 							value = MI.Get(video, i, "Format_Settings_GOP");
-							if (!value.isEmpty()) {
+							if (isNotBlank(value)) {
 								media.putExtra(FormatConfiguration.MI_GOP, value);
 							}
 
@@ -182,18 +184,13 @@ public class LibMediaInfoParser {
 							}
 
 							value = MI.Get(video, i, "BitDepth");
-							if (!value.isEmpty()) {
+							if (isNotBlank(value)) {
 								try {
 									media.setVideoBitDepth(Integer.parseInt(value));
 								} catch (NumberFormatException nfe) {
 									LOGGER.debug("Could not parse bits per sample \"" + value + "\"");
 								}
 							}
-						}
-
-						value = MI.Get(video, i, "Format_Profile");
-						if (!value.isEmpty() && media.getCodecV() != null && media.getCodecV().equals(FormatConfiguration.H264)) {
-							media.setAvcLevel(getAvcLevel(value));
 						}
 					}
 				}
@@ -246,7 +243,7 @@ public class LibMediaInfoParser {
 
 						// Special check for OGM: MediaInfo reports specific Audio/Subs IDs (0xn) while mencoder does not
 						value = MI.Get(audio, i, "ID/String");
-						if (!value.isEmpty()) {
+						if (isNotBlank(value)) {
 							if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
 								currentAudioTrack.setId(getSpecificID(value));
 							} else {
@@ -255,7 +252,7 @@ public class LibMediaInfoParser {
 						}
 
 						value = MI.Get(general, i, "Track/Position");
-						if (!value.isEmpty()) {
+						if (isNotBlank(value)) {
 							try {
 								currentAudioTrack.setTrack(Integer.parseInt(value));
 							} catch (NumberFormatException nfe) {
@@ -309,7 +306,7 @@ public class LibMediaInfoParser {
 						currentSubTrack.setSubtitlesTrackTitleFromMetadata((MI.Get(text, i, "Title")).trim());
 						// Special check for OGM: MediaInfo reports specific Audio/Subs IDs (0xn) while mencoder does not
 						value = MI.Get(text, i, "ID/String");
-						if (!value.isEmpty()) {
+						if (isNotBlank(value)) {
 							if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
 								currentSubTrack.setId(getSpecificID(value));
 							} else {
@@ -510,10 +507,21 @@ public class LibMediaInfoParser {
 				value.startsWith("m4a") ||
 				value.startsWith("m4v") ||
 				value.equals("mpeg-4 visual") ||
-				value.equals("xavc") ||
-				value.equals("xvid")
+				value.equals("xavc")
 			) {
 				format = FormatConfiguration.MP4;
+		} else if (
+				media.getCodecV() != null &&
+				media.getCodecV().equals(FormatConfiguration.MP4) &&
+				value.startsWith("simple@l")
+			) {
+			media.setCodecV(FormatConfiguration.MPEG4SP);
+		} else if (
+				media.getCodecV() != null &&
+				media.getCodecV().equals(FormatConfiguration.MP4) &&
+				value.startsWith("advanced simple@l")
+			) {
+			media.setCodecV(FormatConfiguration.MPEG4ASP);
 		} else if (value.contains("mpeg-ps")) {
 			format = FormatConfiguration.MPEGPS;
 		} else if (value.contains("mpeg-ts") || value.equals("bdav")) {
@@ -572,11 +580,18 @@ public class LibMediaInfoParser {
 		} else if (value.startsWith("vp9")) {
 			format = FormatConfiguration.VP9;
 		} else if (
-				value.startsWith("div") ||
-				value.equals("dx50") ||
-				value.equals("dvx1")
+				media.getCodecV() != null &&
+				!(
+					media.getCodecV().equals(FormatConfiguration.MPEG4ASP) ||
+					media.getCodecV().equals(FormatConfiguration.MPEG4SP)
+				) &&
+				(
+					value.startsWith("div") ||
+					value.equals("dx50") ||
+					value.equals("dvx1")
+				)
 			) {
-				format = FormatConfiguration.DIVX;
+			format = FormatConfiguration.DIVX;
 		} else if (value.startsWith("indeo")) { // Intel Indeo Video: IV31, IV32, IV41 and IV50
 			format = FormatConfiguration.INDEO;
 		} else if (streamType == StreamType.Video && value.equals("yuv")) {
@@ -796,7 +811,12 @@ public class LibMediaInfoParser {
 			format = FormatConfiguration.BMP;
 		} else if (value.equals("tiff")) {
 			format = FormatConfiguration.TIFF;
-		} else if (containsIgnoreCase(value, "@l") && streamType == StreamType.Video) {
+		} else if (
+				streamType == StreamType.Video &&
+				media.getCodecV() != null &&
+				media.getCodecV().equals(FormatConfiguration.H264) &&
+				containsIgnoreCase(value, "@l")
+			) {
 			media.setAvcLevel(getAvcLevel(value));
 			media.setH264Profile(getAvcProfile(value));
 		}
