@@ -444,38 +444,17 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	public String getDlnaContentFeatures(RendererConfiguration mediaRenderer) {
 		// TODO: Determine renderer's correct localization value
 		int localizationValue = 1;
-		String dlnaOrgPsFlags = null;
+		String dlnaOrgPsFlags = null; // "DLNA.ORG_PS=2/3,-1,4"
 		String dlnaOrgPnFlags = getDlnaOrgPnFlags(mediaRenderer, localizationValue);
-		if (
-			getRendererMimeType(mediaRenderer).equals(MATROSKA_TYPEMIME) &&
-			mediaRenderer.isTranscodeToMKV() &&
-			mediaRenderer.isDLNAOrgPNUsed() &&
-			mediaRenderer.isAccurateDLNAOrgPN() &&
-			(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())
-		) {
-			dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
-//			dlnaOrgPsFlags = "DLNA.ORG_PS=2/3,-1,4"; // PlaySpeed.dlna.org should be implemented
+		String dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=01700000000000000000000000000000";
+		if (mediaRenderer.isSAMSUNG()) {
+			dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=ED100000000000000000000000000000";
+		}
+		if (mediaRenderer.isPS4()) {
+			dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=8d700000000000000000000000000000";
 		}
 
-		if (
-			getRendererMimeType(mediaRenderer).equals(MP4_TYPEMIME) &&
-			mediaRenderer.isTranscodeToMP4() &&
-			mediaRenderer.isTranscodeToH264() &&
-			mediaRenderer.isDLNAOrgPNUsed() &&
-			mediaRenderer.isAccurateDLNAOrgPN()
-		) { // AVC_MP4_NDHD
-			if (mediaRenderer.isTranscodeToAAC()) {
-				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_EU";
-			}
-			if (mediaRenderer.isTranscodeToAC3()) {
-				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_EAC3";
-			}
-			if (mediaRenderer.isTranscodeToDTS()) {
-				dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_HP_HD_DTS";
-			}
-		}
-
-		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + (dlnaOrgPsFlags != null ? (";" + dlnaOrgPsFlags) : "") + ";DLNA.ORG_CI=0;DLNA.ORG_FLAGS=ED100000000000000000000000000000";
+		return (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + (dlnaOrgPsFlags != null ? (";" + dlnaOrgPsFlags) : "") + dlnaOrgCiFlags;
 	}
 
 	public String getDlnaContentFeatures(DLNAImageProfile profile, boolean thumbnailRequest) {
@@ -1913,7 +1892,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	private String getDlnaOrgOpFlags(RendererConfiguration mediaRenderer) {
 		String dlnaOrgOpFlags = "01"; // seek by byte (exclusive)
 
-		if (mediaRenderer.isSeekByTime() && player != null && player.isTimeSeekable()) {
+		if (mediaRenderer.isSeekByTime()) {
 			/**
 			 * Some renderers - e.g. the PS3 and Panasonic TVs - behave erratically when
 			 * transcoding if we keep the default seek-by-byte permission on when permitting
@@ -1988,7 +1967,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					} else {
 						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_MP4_MP_SD_DTS";
 					}
-
+				}
+			} else if (
+					(mime.equals("video/x-mkv") || mime.equals(MATROSKA_TYPEMIME)) &&
+					(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4()) &&
+					mediaRenderer.isAccurateDLNAOrgPN()
+				) {
+					dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
+			} else if (mime.equals(MPEG_TYPEMIME)) {
 					if (player != null) {
 						// VLC Web Video (Legacy) and tsMuxeR always output MPEG-TS
 						boolean isFileMPEGTS = TsMuxeRVideo.ID.equals(player.id()) || VideoLanVideoStreaming.ID.equals(player.id());
@@ -2332,49 +2318,42 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 						}
 
 						if (isFileMPEGTS) {
-							dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_TS_SD_EU_ISOLocalizedValue(localizationValue);
+							dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_TS_ISOLocalizedValue(localizationValue, (media.isHDVideo() || media.is4KVideo()));
 							if (
-								media.isH264() &&
+								mediaRenderer.isTranscodeToH264() &&
 								!VideoLanVideoStreaming.ID.equals(player.id()) &&
 								isMuxableResult
 							) {
-								dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_HD_24_AC3_ISO";
-								if (mediaRenderer.isTranscodeToMPEGTSH264AAC()) {
-									dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_HP_HD_AAC";
-								}
-							}
-						}
-					} else if (media != null) {
-						if (media.isMpegTS()) {
-							dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_TS_EULocalizedValue(localizationValue, media.isHDVideo());
-							if (media.isH264()) {
-								dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_HD_50_AC3";
-								if (mediaRenderer.isTranscodeToMPEGTSH264AAC()) {
-									dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_HP_HD_AAC";
-								}
+								dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_NA_ISO";
 							}
 						}
 					}
-				} else if (mime.equals("video/vnd.dlna.mpeg-tts")) {
-					// patters - on Sony BDP m2ts clips aren't listed without this
-					dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_TS_EULocalizedValue(localizationValue, media.isHDVideo());
-				} else if (mime.equals(JPEG_TYPEMIME)) {
-					int width = media.getWidth();
-					int height = media.getHeight();
-					if (width > 1024 || height > 768) { // 1024 * 768
-						dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_LRG";
-					} else if (width > 640 || height > 480) { // 640 * 480
-						dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_MED";
-					} else if (width > 160 || height > 160) { // 160 * 160
-						dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_SM";
+			} else if (mime.equals(MPEGTS_TYPEMIME)  && mediaRenderer.isAccurateDLNAOrgPN()) {
+				dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_TS_LocalizedValue(localizationValue, (media.isHDVideo() || media.is4KVideo()));
+				if (mediaRenderer.isTranscodeToH264() && player != null || media.isH264() && player == null) {
+					if (media.isHDVideo()) {
+						dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_MP_HD_AC3";
 					} else {
-						dlnaOrgPnFlags = "DLNA.ORG_PN=JPEG_TN";
+							dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_MP_SD_AC3";
 					}
+					if (mediaRenderer.isTranscodeToMPEGTSH264AAC()) {
+						if (media.isHDVideo()) {
+							dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_MP_HD_AAC_MULT5";
+						} else {
+							dlnaOrgPnFlags = "DLNA.ORG_PN=AVC_TS_MP_SD_AAC_MULT5";
+						}
+					}
+				}
+			} else if (mime.equals(MPEG_TYPEMIME) && (player == null || player != null && mediaRenderer.isTranscodeToMPEGPS())) {
+//				dlnaOrgPnFlags = "DLNA.ORG_PN=" + getMPEG_PS_LocalizedValue(localizationValue);
 
-				} else if (mime.equals(AUDIO_MP3_TYPEMIME)) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=MP3";
-				} else if (mime.substring(0, 9).equals(AUDIO_LPCM_TYPEMIME) || mime.equals(AUDIO_WAV_TYPEMIME)) {
-					dlnaOrgPnFlags = "DLNA.ORG_PN=LPCM";
+				double fps = 25;
+				if (isNotBlank(media.getFrameRate())) {
+					try {
+						fps = Double.parseDouble(media.getFrameRate());
+					} catch (NumberFormatException nfe) {
+						LOGGER.debug("Could not parse the framerate \"" + media.getFrameRate() + "\"");
+					}
 				}
 				if (fps < 26 && isBlank(media.getInterlaced()) || fps < 52 && isNotBlank(media.getInterlaced())) {
 					dlnaOrgPnFlags = "DLNA.ORG_PN=MPEG_PS_PAL";
@@ -2571,8 +2550,19 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				openTag(sb, "res");
 				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
 				String dlnaOrgPnFlags = getDlnaOrgPnFlags(mediaRenderer, c);
-				String tempString = "http-get:*:" + getRendererMimeType(mediaRenderer) + ":" + (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer);
-				wireshark.append(' ').append(tempString);
+				String dlnaOrgPsFlags = null;
+//				if (getRendererMimeType(mediaRenderer).equals(MATROSKA_TYPEMIME) && mediaRenderer.isTranscodeToMKV() && (mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())) {
+//					dlnaOrgPsFlags = "DLNA.ORG_PS=2/3,-1,4"; // PlaySpeed.dlna.org should be implemented
+//				}
+
+				String dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=01700000000000000000000000000000";
+				if (mediaRenderer.isSAMSUNG()) {
+					dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=ED100000000000000000000000000000";
+				}
+				if (mediaRenderer.isPS4()) {
+					dlnaOrgCiFlags = ";DLNA.ORG_CI=1;DLNA.ORG_FLAGS=8d700000000000000000000000000000";
+				}
+				String tempString = "http-get:*:" + getRendererMimeType(mediaRenderer) + ":" + (dlnaOrgPnFlags != null ? (dlnaOrgPnFlags + ";") : "") + getDlnaOrgOpFlags(mediaRenderer) + (dlnaOrgPsFlags != null ? (";" + dlnaOrgPsFlags) : "") + dlnaOrgCiFlags;
 				addAttribute(sb, "protocolInfo", tempString);
 				if (subsAreValidForStreaming && mediaRenderer.offerSubtitlesByProtocolInfo() && !mediaRenderer.useClosedCaption()) {
 					addAttribute(sb, "pv:subtitleFileType", media_subtitle.getType().getExtension().toUpperCase());

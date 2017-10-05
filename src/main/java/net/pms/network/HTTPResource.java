@@ -242,54 +242,82 @@ public class HTTPResource {
 	}
 
 	public int getDLNALocalesCount() {
-		return 3;
+		return 4;
 	}
 
-	public final String getMPEG_PS_PALLocalizedValue(int index) {
-		if (index == 1 || index == 2) {
+	public final String getMPEG_PS_LocalizedValue(int index) {
+		if (index == 1 || index == 2 || index == 4) {
 			return "MPEG_PS_NTSC";
 		}
 
 		return "MPEG_PS_PAL";
+
+
 	}
 
-	public final String getMPEG_TS_SD_EU_ISOLocalizedValue(int index) {
-		if (index == 1) {
+	public final String getMPEG_TS_ISOLocalizedValue(int index, boolean isHD) {
+		String definition = "SD";
+		if (!isHD) {
+			if (index == 1) {
+				return "MPEG_TS_" + definition + "_NA_ISO";
+			}
+
+			if (index == 2) {
+				return "MPEG_TS_" + definition + "_KO_ISO";
+			}
+
+			if (index == 3) {
+				return "MPEG_TS_" + definition + "_EU_ISO";
+			}
+
+			if (index == 4) {
+				return "MPEG_TS_" + definition + "_JP_T";
+			}
+
 			return "MPEG_TS_SD_NA_ISO";
-		}
+		} else {
+			definition = "HD";
+			if (index == 1) {
+				return "MPEG_TS_" + definition + "_NA_XAC3_ISO";
+			}
 
-		if (index == 2) {
-			return "MPEG_TS_SD_JP_ISO";
-		}
+			if (index == 2) {
+				return "MPEG_TS_" + definition + "_KO_XAC3_ISO";
+			}
 
-		return "MPEG_TS_SD_EU_ISO";
+			if (index == 3) {
+				return "MPEG_TS_" + definition + "_EU_XAC3_ISO";
+			}
+
+			if (index == 4) {
+				return "MPEG_TS_" + definition + "_JP_T";
+			}
+
+			return "MPEG_TS_HD_NA_ISO";
+		}
 	}
 
-	public final String getMPEG_TS_SD_EULocalizedValue(int index) {
-		if (index == 1) {
-			return "MPEG_TS_SD_NA";
-		}
-
-		if (index == 2) {
-			return "MPEG_TS_SD_JP";
-		}
-
-		return "MPEG_TS_SD_EU";
-	}
-
-	public final String getMPEG_TS_EULocalizedValue(int index, boolean isHD) {
+	public final String getMPEG_TS_LocalizedValue(int index, boolean isHD) {
 		String definition = "SD";
 		if (isHD) {
 			definition = "HD";
 		}
-
 		if (index == 1) {
-			return "MPEG_TS_" + definition + "_NA";
-		}
-		if (index == 2) {
-			return "MPEG_TS_" + definition + "_JP";
+			return "MPEG_TS_" + definition + "_NA_T";
 		}
 
-		return "MPEG_TS_" + definition + "_EU";
+		if (index == 2) {
+			return "MPEG_TS_" + definition + "_KO_T";
+		}
+
+		if (index == 3) {
+			return "MPEG_TS_" + definition + "_EU_T";
+		}
+
+		if (index == 4) {
+			return "MPEG_TS_" + definition + "_JP_T";
+		}
+
+		return "MPEG_TS_" + definition + "_NA_T";
 	}
 }

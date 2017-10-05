@@ -100,6 +100,7 @@ public class RequestV2 extends HTTPResource {
 	private RendererConfiguration mediaRenderer;
 	private String transferMode;
 	private String contentFeatures;
+	private String mediaInfo;
 	private final Range.Time range = new Range.Time();
 
 	/**
@@ -156,6 +157,14 @@ public class RequestV2 extends HTTPResource {
 
 	public void setContentFeatures(String contentFeatures) {
 		this.contentFeatures = contentFeatures;
+	}
+
+	public String getMediaInfo() {
+		return mediaInfo;
+	}
+
+	public void setMediaInfo(String mediaInfo) {
+		this.mediaInfo = mediaInfo;
 	}
 
 	public void setTimeRangeStart(Double timeseek) {
@@ -308,7 +317,7 @@ public class RequestV2 extends HTTPResource {
 			String fileName = id.substring(id.indexOf('/') + 1);
 
 			if (transferMode != null) {
-				output.headers().set("TransferMode.DLNA.ORG", transferMode);
+				output.headers().set("TransferMode.dlna.org", transferMode);
 			}
 
 			if (mediaInfo != null) {
@@ -351,7 +360,7 @@ public class RequestV2 extends HTTPResource {
 					inputStream = thumbInputStream.transcode(imageProfile, mediaRenderer != null ? mediaRenderer.isThumbnailPadding() : false);
 					if (contentFeatures != null) {
 						output.headers().set(
-							"ContentFeatures.DLNA.ORG",
+							"contentFeatures.dlna.org",
 							dlna.getDlnaContentFeatures(imageProfile, true)
 						);
 					}
@@ -405,7 +414,7 @@ public class RequestV2 extends HTTPResource {
 							inputStream = DLNAImageInputStream.toImageInputStream(imageInputStream, imageProfile, false);
 							if (contentFeatures != null) {
 								output.headers().set(
-									"ContentFeatures.DLNA.ORG",
+									"contentFeatures.dlna.org",
 									dlna.getDlnaContentFeatures(imageProfile, false)
 								);
 							}
@@ -608,8 +617,10 @@ public class RequestV2 extends HTTPResource {
 						highRange = lowRange + CLoverride - (CLoverride > 0 ? 1 : 0);
 
 						if (contentFeatures != null || mediaRenderer.isSAMSUNG()) {
-							output.headers().set("ContentFeatures.DLNA.ORG", dlna.getDlnaContentFeatures(mediaRenderer));
+							output.headers().set("contentFeatures.dlna.org", dlna.getDlnaContentFeatures(mediaRenderer));
 						}
+
+						output.headers().set("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
 
 						output.headers().set(HttpHeaders.Names.ACCEPT_RANGES, HttpHeaders.Values.BYTES);
 						output.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);

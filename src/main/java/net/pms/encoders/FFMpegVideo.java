@@ -717,13 +717,18 @@ public class FFMpegVideo extends Player {
 			if (isNotBlank(mpeg2OptionsRenderer)) {
 				mpeg2Options = mpeg2OptionsRenderer;
 			} else if (mpeg2Options.contains("Automatic")) {
-				boolean isWireless = mpeg2Options.contains("Wireless");
-				mpeg2Options = "-g 5 -q:v 1 -qmin 2 -qmax 3";
+				if (fps <= 29 && isBlank(media.getInterlaced())) {
+					gop = "-r 25 -g 15";
+				} else if (fps <= 50 && isNotBlank(media.getInterlaced())) {
+					gop = "-r 25 -g 30";
+				} else if (fps > 29 && isBlank(media.getInterlaced())) {
+					gop = "-r 30000/1001 -g 18";
+				} else if (fps <= 60 && isNotBlank(media.getInterlaced())) {
+					gop = "-r 30000/1001 -g 36";
+				}
 
 				// It has been reported that non-PS3 renderers prefer keyint 5 but prefer it for PS3 because it lowers the average bitrate
-				if (params.mediaRenderer.isPS3()) {
-					mpeg2Options = "-g 25 -q:v 1 -qmin 2 -qmax 3";
-				}
+				mpeg2Options = gop + " -q:v 1 -qmin 2 -qmax 3";
 
 				if (isWireless || maximumBitrate < 70) {
 					// Lower quality for 720p+ content

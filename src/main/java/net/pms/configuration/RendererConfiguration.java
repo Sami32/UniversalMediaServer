@@ -914,6 +914,14 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return getConfName().toUpperCase().contains("BRAVIA");
 	}
 
+	public boolean isSONYBDP() {
+		return getConfName().toUpperCase().contains("SONY BLU-RAY");
+	}
+
+	public boolean isSAMSUNG() {
+		return getConfName().toUpperCase().contains("SAMSUNG");
+	}
+
 	public boolean isFDSSDP() {
 		return getConfName().toUpperCase().contains("FDSSDP");
 	}

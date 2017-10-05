@@ -111,6 +111,7 @@ public class Request extends HTTPResource {
 	private RendererConfiguration mediaRenderer;
 	private String transferMode;
 	private String contentFeatures;
+	private String mediaInfo;
 	private double timeseek;
 	private double timeRangeEnd;
 
@@ -160,6 +161,14 @@ public class Request extends HTTPResource {
 
 	public void setTransferMode(String transferMode) {
 		this.transferMode = transferMode;
+	}
+
+	public String getMediaInfo() {
+		return mediaInfo;
+	}
+
+	public void setMediaInfo(String mediaInfo) {
+		this.mediaInfo = mediaInfo;
 	}
 
 	public String getContentFeatures() {
@@ -320,7 +329,7 @@ public class Request extends HTTPResource {
 			String fileName = id.substring(id.indexOf('/') + 1);
 
 			if (transferMode != null) {
-				appendToHeader(responseHeader, "TransferMode.DLNA.ORG: " + transferMode);
+				appendToHeader(responseHeader, "transferMode.dlna.org: " + transferMode);
 			}
 
 			if (mediaInfo != null) {
@@ -363,7 +372,7 @@ public class Request extends HTTPResource {
 					if (contentFeatures != null) {
 						appendToHeader(
 							responseHeader,
-							"ContentFeatures.DLNA.ORG: " + dlna.getDlnaContentFeatures(imageProfile, true)
+							"contentFeatures.dlna.org: " + dlna.getDlnaContentFeatures(imageProfile, true)
 						);
 					}
 					if (inputStream != null && (lowRange > 0 || highRange > 0)) {
@@ -413,7 +422,7 @@ public class Request extends HTTPResource {
 							if (contentFeatures != null) {
 								appendToHeader(
 									responseHeader,
-									"ContentFeatures.DLNA.ORG: " + dlna.getDlnaContentFeatures(imageProfile, false)
+									"contentFeatures.dlna.org: " + dlna.getDlnaContentFeatures(imageProfile, false)
 								);
 							}
 							if (inputStream != null && (lowRange > 0 || highRange > 0)) {
@@ -568,7 +577,7 @@ public class Request extends HTTPResource {
 						}
 
 						if (contentFeatures != null || mediaRenderer.isSAMSUNG()) {
-							appendToHeader(responseHeader, "ContentFeatures.DLNA.ORG: " + dlna.getDlnaContentFeatures(mediaRenderer));
+							appendToHeader(responseHeader, "contentFeatures.dlna.org: " + dlna.getDlnaContentFeatures(mediaRenderer));
 						}
 
 						if (dlna.getPlayer() == null || xbox360) {
