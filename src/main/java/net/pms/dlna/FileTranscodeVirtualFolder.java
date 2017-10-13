@@ -142,7 +142,8 @@ public class FileTranscodeVirtualFolder extends VirtualFolder {
 	}
 
 	private void addChapterFolder(DLNAResource dlna) {
-		if (!dlna.getFormat().isVideo()) {
+		final RendererConfiguration mediaRenderer = OutputParams.mediaRenderer;
+		if (!dlna.getFormat().isVideo() || !dlna.getPlayer().isPlayerCompatible(mediaRenderer)) {
 			return;
 		}
 
