@@ -211,7 +211,13 @@ public class LibMediaInfoParser {
 						currentAudioTrack.setLang(getLang(MI.Get(audio, i, "Language/String")));
 						currentAudioTrack.setAudioTrackTitleFromMetadata((MI.Get(audio, i, "Title")).trim());
 						currentAudioTrack.getAudioProperties().setBitRate(MI.Get(audio, i, "BitRate"));
-						currentAudioTrack.getAudioProperties().setNumberOfChannels(MI.Get(audio, i, "Channel(s)"));
+						value = MI.Get(audio, i, "Channel(s)_Original");
+						if (isNotBlank(value)) {
+							currentAudioTrack.getAudioProperties().setNumberOfChannels(MI.Get(audio, i, "Channel(s)_Original"));
+						} else {
+							currentAudioTrack.getAudioProperties().setNumberOfChannels(MI.Get(audio, i, "Channel(s)"));
+						}
+
 						currentAudioTrack.getAudioProperties().setBitsperSample(MI.Get(audio, i, "BitDepth"));
 						currentAudioTrack.getAudioProperties().setSampleFrequency(MI.Get(audio, i, "SamplingRate"));
 						currentAudioTrack.getAudioProperties().setAudioDelay(MI.Get(audio, i, "Video_Delay"));

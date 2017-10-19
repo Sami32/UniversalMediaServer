@@ -965,6 +965,19 @@ public class FFMpegVideo extends Player {
 			cmdList.add("anullsrc");
 		}
 
+		// To decode correctly AAC 7.1
+		if (
+			params.aid != null &&
+			params.aid.getAudioProperties().getNumberOfChannels() >= 8 &&
+			(
+				params.aid.isAACLC() ||
+				params.aid.isHEAAC()
+			)
+		) {
+			transcodeOptions.add("-strict");
+			transcodeOptions.add("1"); // strict compliance to the specifications
+		}
+
 		if (params.aid != null && (params.aid.isAACLC() && aacRemux || params.aid.isAC3() && ac3Remux || params.aid.isDTS() && dtsRemux || (params.aid.isDTS() || params.aid.isDTSHD()) && dtscoreRemux)) {
 			cmdList.add("-noaccurate_seek");
 		}
@@ -1242,7 +1255,9 @@ public class FFMpegVideo extends Player {
 					channels = 2;
 				} else if (params.aid != null && params.aid.getAudioProperties().getNumberOfChannels() > configuration.getAudioChannelCount()) {
 					channels = configuration.getAudioChannelCount();
-				} else if (params.aid != null) {
+				} else if (params.aid != null && renderer.isTranscodeToAC3() && params.aid.getAudioProperties().getNumberOfChannels() > 6) {
+					channels = 6;
+				} else if (params.aid != null && !(renderer.isTranscodeToAC3() && params.aid.getAudioProperties().getNumberOfChannels() > 6)) {
 					channels = params.aid.getAudioProperties().getNumberOfChannels();
 				} else {
 					channels = 2;

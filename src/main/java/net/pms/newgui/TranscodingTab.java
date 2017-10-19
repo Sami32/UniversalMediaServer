@@ -660,10 +660,11 @@ public class TranscodingTab {
 
 		builder.addLabel(Messages.getString("TrTab2.50"), FormLayoutUtil.flip(cc.xy(1, 2), colSpec, orientation));
 
-		Integer[] keys = new Integer[] {2, 6};
+		Integer[] keys = new Integer[] {2, 6, 8};
 		String[] values = new String[] {
 			Messages.getString("TrTab2.55"),
-			Messages.getString("TrTab2.56"), // 7.1 not supported by Mplayer
+			Messages.getString("TrTab2.56"),
+			Messages.getString("TrTab2.57"),// 7.1 not supported by Mplayer
 		};
 
 		final KeyedComboBoxModel<Integer, String> audioChannelsModel = new KeyedComboBoxModel<>(keys, values);
