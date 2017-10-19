@@ -153,6 +153,12 @@ public class FFMpegVideo extends Player {
 			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight + ":force_original_aspect_ratio=decrease:flags=lanczos+accurate_rnd,bwdif=mode=send_frame");
 		}
 
+		if (renderer.isTranscodeToMPEGPS() && (media.getWidth() > 1920 || media.getHeight() > 1088) && (renderer.getMaxVideoWidth() > 1920 || renderer.getMaxVideoHeight() > 1088)) {
+			scaleWidth = 1920;
+			scaleHeight = 1080;
+			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight + ":force_original_aspect_ratio=decrease:flags=lanczos+accurate_rnd,bwdif=mode=send_frame");
+		}
+
 		if (
 			!keepAR &&
 			(renderer.isTranscodeToH264() || renderer.isTranscodeToMP4()) &&
@@ -366,7 +372,7 @@ public class FFMpegVideo extends Player {
 					params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount() &&
 					!isSubtitlesAndTimeseek
 				)
-			   ) {
+			) {
 				// AAC-LC, AC-3 and DTS/DTS-HD remux
 				if (
 					!customFFmpegOptions.contains("-c:a ") &&
@@ -387,7 +393,7 @@ public class FFMpegVideo extends Player {
 						transcodeOptions.add("-b:a");
 						transcodeOptions.add(String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.aid)) + "k");
 					}
-					if (renderer.isTranscodeToMP4() && params.aid != null && params.aid.isAACLC()) {
+					if (renderer.isTranscodeToMP4() && params.aid.isAACLC()) {
 						transcodeOptions.add("-bsf:a");
 						transcodeOptions.add("aac_adtstoasc");
 					}
@@ -454,6 +460,15 @@ public class FFMpegVideo extends Player {
 							transcodeOptions.add("-af");
 							transcodeOptions.add("aresample=resampler=soxr:precision=28");
 						}
+					}
+				} else if (renderer.isTranscodeToLPCM()) {
+					if (
+						!customFFmpegOptions.contains("-c:a ") &&
+						!customFFmpegOptions.contains("-codec:a") &&
+						!customFFmpegOptions.contains("-acodec")
+					) {
+						transcodeOptions.add("-c:a");
+						transcodeOptions.add("pcm_s16be");
 					}
 				}
 			}
@@ -674,14 +689,29 @@ public class FFMpegVideo extends Player {
 
 			if (defaultMaxBitrates[0] > 0 && !customFFmpegOptions.contains("-maxrate")) {
 				videoBitrateOptions.add("-maxrate");
-				videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
+				if (params.mediaRenderer.isTranscodeToMPEGPS()) {
+					videoBitrateOptions.add("9800k");
+				} else {
+					videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
+				}
 			}
 		}
 
-		if (isXboxOneWebVideo || !params.mediaRenderer.isTranscodeToH264()) {
+		if (isXboxOneWebVideo || params.mediaRenderer.isTranscodeToMPEG2()) {
 			// Add MPEG-2 quality settings
 			String mpeg2Options = configuration.getMPEG2MainSettingsFFmpeg();
 			String mpeg2OptionsRenderer = params.mediaRenderer.getCustomFFmpegMPEG2Options();
+			boolean isWireless = mpeg2Options.contains("Wireless");
+			String gop = "-g 15";
+			double fps = 25;
+
+			if (isNotBlank(media.getFrameRate())) {
+				try {
+					fps = Double.parseDouble(media.getFrameRate());
+				} catch (NumberFormatException nfe) {
+					LOGGER.debug("Could not parse the framerate \"" + media.getFrameRate() + "\"");
+				}
+			}
 
 			// Renderer settings take priority over user settings
 			if (isNotBlank(mpeg2OptionsRenderer)) {
@@ -698,9 +728,9 @@ public class FFMpegVideo extends Player {
 				if (isWireless || maximumBitrate < 70) {
 					// Lower quality for 720p+ content
 					if (media.getWidth() > 1280) {
-						mpeg2Options = "-g 25 -qmax 7 -qmin 2";
+						mpeg2Options = gop + " -qmax 7 -qmin 2";
 					} else if (media.getWidth() > 720) {
-						mpeg2Options = "-g 25 -qmax 5 -qmin 2";
+						mpeg2Options = gop + " -qmax 5 -qmin 2";
 					}
 				}
 			}
@@ -947,7 +977,7 @@ public class FFMpegVideo extends Player {
 		if (LOGGER.isTraceEnabled()) { // Set -loglevel in accordance with LOGGER setting
 			cmdList.add("info"); // Could be changed to "verbose" or "debug" if "info" level is not enough
 		} else {
-			cmdList.add("panic");
+			cmdList.add("fatal");
 		}
 
 		if (!renderer.isTranscodeToMP4()) {
@@ -1269,17 +1299,27 @@ public class FFMpegVideo extends Player {
 						cmdList.add(String.valueOf(CodecUtil.getAACBitrate(configuration, params.aid)) + "k");
 					} else if (renderer.isTranscodeToAC3()) {
 						cmdList.add(String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.aid)) + "k");
+					} else if (renderer.isTranscodeToMPEGPSMPEG2LPCM()) {
+						cmdList.add("1536k");
 					}
 				}
 
 				if (!customFFmpegOptions.contains("-ar ") && !renderer.isTranscodeToDTS()) {
 					cmdList.add("-ar");
-					cmdList.add("" + params.mediaRenderer.getTranscodedVideoAudioSampleRate());
+					if (renderer.isTranscodeToMPEGPSMPEG2LPCM()) {
+						cmdList.add("48000");
+					} else {
+						cmdList.add("" + params.mediaRenderer.getTranscodedVideoAudioSampleRate());
+					}
 				}
 
 				if (!customFFmpegOptions.contains("-ac ") && !customFFmpegOptions.contains("ocl=") && channels > 0) {
 					cmdList.add("-ac");
-					cmdList.add(String.valueOf(channels));
+					if (renderer.isTranscodeToMPEGPSMPEG2LPCM()) {
+						cmdList.add("2");
+					} else {
+						cmdList.add(String.valueOf(channels));
+					}
 				}
 			}
 

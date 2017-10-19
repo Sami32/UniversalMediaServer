@@ -110,6 +110,7 @@ public class PmsConfiguration extends RendererConfiguration {
 	protected static final String KEY_AUDIO_SUB_LANGS = "audio_subtitles_languages";
 	protected static final String KEY_AUDIO_THUMBNAILS_METHOD = "audio_thumbnails_method";
 	protected static final String KEY_AUDIO_USE_PCM = "audio_use_pcm";
+	protected static final String KEY_AUDIO_LPCM = "audio_lpcm";
 	protected static final String KEY_AUTO_UPDATE = "auto_update";
 	protected static final String KEY_AUTOLOAD_SUBTITLES = "autoload_external_subtitles";
 	protected static final String KEY_AVISYNTH_CONVERT_FPS = "avisynth_convert_fps";
@@ -2454,6 +2455,14 @@ public class PmsConfiguration extends RendererConfiguration {
 	public boolean getMencoderMT() {
 		boolean isMultiCore = getNumberOfCpuCores() > 1;
 		return getBoolean(KEY_MENCODER_MT, isMultiCore);
+	}
+
+	public void setAudioTranscodedToLPCM(boolean value) {
+		configuration.setProperty(KEY_AUDIO_LPCM, value);
+	}
+
+	public boolean isAudioTranscodedToLPCM() {
+		return getBoolean(KEY_AUDIO_LPCM, false);
 	}
 
 	public void setAudioRemuxAACLC(boolean value) {

@@ -118,8 +118,9 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	protected static final String MPEGTSH264AC3 = "MPEGTS-H264-AC3";
 	protected static final String MPEGTSH265AAC = "MPEGTS-H265-AAC";
 	protected static final String MPEGTSH265AC3 = "MPEGTS-H265-AC3";
-	protected static final String MPEGPSMPEG2AC3 = "MPEGPS-MPEG2-AC3";
 	protected static final String MPEGTSMPEG2AC3 = "MPEGTS-MPEG2-AC3";
+	protected static final String MPEGPSMPEG2AC3 = "MPEGPS-MPEG2-AC3";
+	protected static final String MPEGPSMPEG2LPCM = "MPEGPS-MPEG2-LPCM";
 
 	// property names
 	protected static final String ACCURATE_DLNA_ORGPN = "AccurateDLNAOrgPN";
@@ -1191,6 +1192,10 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return getVideoTranscode().equals(MPEGPSMPEG2AC3);
 	}
 
+	public boolean isTranscodeToMPEGPSMPEG2LPCM() {
+		return getVideoTranscode().equals(MPEGPSMPEG2LPCM);
+	}
+
 	public boolean isTranscodeToMPEGTSMPEG2AC3() {
 		return getVideoTranscode().equals(MPEGTSMPEG2AC3);
 	}
@@ -1312,6 +1317,14 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	}
 
 	/**
+	 * @return whether to use the MPEG-PS container for transcoded video.
+	 */
+	public boolean isTranscodeToMPEGPS() {
+		return isTranscodeToMPEGPSMPEG2AC3() ||
+			isTranscodeToMPEGPSMPEG2LPCM();
+	}
+
+	/**
 	 * @return whether to use the MPEG-TS container for transcoded video.
 	 */
 	public boolean isTranscodeToMPEGTS() {
@@ -1326,7 +1339,9 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	 * @return whether to use the MPEG-2 video codec for transcoded video.
 	 */
 	public boolean isTranscodeToMPEG2() {
-		return isTranscodeToMPEGTSMPEG2AC3() || isTranscodeToMPEGPSMPEG2AC3();
+		return isTranscodeToMPEGTSMPEG2AC3() ||
+			isTranscodeToMPEGPSMPEG2AC3() ||
+			isTranscodeToMPEGPSMPEG2LPCM();
 	}
 
 	public boolean isTranscodeToMP3() {
@@ -1334,7 +1349,8 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	}
 
 	public boolean isTranscodeToLPCM() {
-		return getAudioTranscode().equals(LPCM);
+		return isTranscodeToMPEGPSMPEG2LPCM() ||
+			getAudioTranscode().equals(LPCM);
 	}
 
 	public boolean isTranscodeToWAV() {
@@ -1419,6 +1435,8 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGTS, FormatConfiguration.MPEG2, FormatConfiguration.AC3);
 				} else if (isTranscodeToWMV()) {
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.WMV,    FormatConfiguration.WMV,   FormatConfiguration.WMA);
+				} else if (isTranscodeToMPEGPSMPEG2LPCM()) {
+					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGPS, FormatConfiguration.MPEG2, FormatConfiguration.LPCM);
 				} else {
 					// Default video transcoding mime type
 					matchedMimeType = getFormatConfiguration().match(FormatConfiguration.MPEGPS, FormatConfiguration.MPEG2, FormatConfiguration.AC3);
@@ -1464,7 +1482,7 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 				} else if (isTranscodeToMKV()) {
 					// Default video transcoding mime type
 					matchedMimeType = HTTPResource.MATROSKA_TYPEMIME;
-				} else {
+				} else if (isTranscodeToMPEGPS()) {
 					// Default video transcoding mime type
 					matchedMimeType = HTTPResource.MPEG_TYPEMIME;
 				}

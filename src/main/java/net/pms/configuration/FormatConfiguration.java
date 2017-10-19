@@ -472,7 +472,7 @@ public class FormatConfiguration {
 	}
 
 	public boolean isLPCMSupported() {
-		return match(MPEGPS, null, LPCM) != null || match(MPEGTS, null, LPCM) != null;
+		return match(MPEGPS, MPEG2, LPCM) != null || match(MPEGTS, H264, LPCM) != null;
 	}
 
 	public boolean isMpeg2Supported() {

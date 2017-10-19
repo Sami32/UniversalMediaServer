@@ -55,6 +55,8 @@ import net.pms.util.*;
 import static net.pms.util.StringUtil.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -451,9 +453,10 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			mediaRenderer.isAccurateDLNAOrgPN() &&
 			(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())
 		) {
-			dlnaOrgPnFlags = "MATROSKA";
+			dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
 //			dlnaOrgPsFlags = "DLNA.ORG_PS=2/3,-1,4"; // PlaySpeed.dlna.org should be implemented
 		}
+
 		if (
 			getRendererMimeType(mediaRenderer).equals(MP4_TYPEMIME) &&
 			mediaRenderer.isTranscodeToMP4() &&
