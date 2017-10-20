@@ -142,7 +142,7 @@ public class FFmpegAudio extends FFMpegVideo {
 		configuration = (DeviceConfiguration)params.mediaRenderer;
 		final String filename = dlna.getFileName();
 		params.maxBufferSize = configuration.getMaxAudioBuffer();
-		params.waitbeforestart = 2000;
+		params.waitbeforestart = 1;
 		params.manageFastStart();
 
 		/*
