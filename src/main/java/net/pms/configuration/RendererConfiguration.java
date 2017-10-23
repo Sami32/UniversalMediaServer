@@ -103,19 +103,6 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	protected static final String WAV = "WAV";
 	protected static final String WMV = "WMV";
 
-	// Old video transcoding options
-	@Deprecated
-	protected static final String DEPRECATED_MPEGAC3 = "MPEGAC3";
-
-	@Deprecated
-	protected static final String DEPRECATED_MPEGPSAC3 = "MPEGPSAC3";
-
-	@Deprecated
-	protected static final String DEPRECATED_MPEGTSAC3 = "MPEGTSAC3";
-
-	@Deprecated
-	protected static final String DEPRECATED_H264TSAC3 = "H264TSAC3";
-
 	// Current video transcoding options
 	protected static final String MKVH264AAC = "MKV-H264-AAC";
 	protected static final String MKVH264AC3 = "MKV-H264-AC3";
@@ -1201,17 +1188,15 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 	}
 
 	public boolean isTranscodeToMPEGPSMPEG2AC3() {
-		return getVideoTranscode().equals(MPEGPSMPEG2AC3) ||
-			getVideoTranscode().equals(DEPRECATED_MPEGAC3) ||
-			getVideoTranscode().equals(DEPRECATED_MPEGPSAC3);
+		return getVideoTranscode().equals(MPEGPSMPEG2AC3);
 	}
 
 	public boolean isTranscodeToMPEGTSMPEG2AC3() {
-		return getVideoTranscode().equals(MPEGTSMPEG2AC3) || getVideoTranscode().equals(DEPRECATED_MPEGTSAC3);
+		return getVideoTranscode().equals(MPEGTSMPEG2AC3);
 	}
 
 	public boolean isTranscodeToMPEGTSH264AC3() {
-		return getVideoTranscode().equals(MPEGTSH264AC3) || getVideoTranscode().equals(DEPRECATED_H264TSAC3);
+		return getVideoTranscode().equals(MPEGTSH264AC3);
 	}
 
 	public boolean isTranscodeToMPEGTSH264AAC() {
