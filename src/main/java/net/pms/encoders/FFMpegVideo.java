@@ -1055,6 +1055,21 @@ public class FFMpegVideo extends Player {
 		// Input filename
 		cmdList.add("-analyzeduration");
 		cmdList.add("12000000");
+
+		if (
+			!configuration.isDisableSubtitles() &&
+			!avisynth &&
+			params.sid != null &&
+			// Should be modified when this PR will be merged: https://github.com/Sami32/UniversalMediaServer/pull/8
+			// (params.sid.getType() == SubtitleType.DVBSUB || params.sid.getType() == SubtitleType.TX3G || params.sid.getType() == SubtitleType.TELETEXT)
+			(
+				renderer.isTranscodeToMP4() ||
+				renderer.isTranscodeToMPEGTS()
+//				|| renderer.isTranscodeToMKV()
+			)
+		) {
+			cmdList.add("-fix_sub_duration");
+		}
 		cmdList.add("-i");
 		if (avisynth && !filename.toLowerCase().endsWith(".iso")) {
 			File avsFile = AviSynthFFmpeg.getAVSScript(filename, params.sid, params.fromFrame, params.toFrame, frameRateRatio, frameRateNumber, configuration);
