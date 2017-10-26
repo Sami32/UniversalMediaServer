@@ -323,6 +323,17 @@ public class Request extends HTTPResource {
 				appendToHeader(responseHeader, "TransferMode.DLNA.ORG: " + transferMode);
 			}
 
+			if (mediaInfo != null) {
+				String timetotalValue = dlna.getMedia().getDurationString();
+				int timetotalinms =1000;
+				try {
+					timetotalinms = Integer.parseInt(timetotalValue.trim()) * 1000;
+				} catch (NumberFormatException nfe) {
+					LOGGER.debug("Could not parse the total duration \"" + timetotalValue + "\"");
+				}
+				appendToHeader(responseHeader, "MediaInfo.sec: SEC_Duration=" + timetotalinms);
+			}
+
 			if (dlna != null && dlna.isFolder() && !fileName.startsWith("thumbnail0000")) {
 				// if we found a folder we MUST be asked for thumbnails
 				// otherwise this is not allowed
