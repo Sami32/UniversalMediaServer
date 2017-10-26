@@ -87,7 +87,12 @@ public class LibMediaInfoParser {
 				// set General
 				getFormat(general, media, currentAudioTrack, MI.Get(general, 0, "Format"), file);
 				getFormat(general, media, currentAudioTrack, MI.Get(general, 0, "CodecID").trim(), file);
-				media.setDuration(getDuration(MI.Get(general, 0, "Duration/String1")));
+				value = MI.Get(video, 0, "Duration");
+				if (isNotBlank(value)) {
+					media.setDuration(getDuration(value));
+				} else {
+					media.setDuration(getDuration(MI.Get(general, 0, "Duration")));
+				}
 				media.setBitrate(getBitrate(MI.Get(general, 0, "OverallBitRate")));
 				media.setStereoscopy(MI.Get(general, 0, "StereoscopicLayout"));
 				media.setTruncated(getTruncated(MI.Get(general, 0, "IsTruncated")));
@@ -1008,35 +1013,14 @@ public class LibMediaInfoParser {
 	}
 
 	private static double getDuration(String value) {
-		int h = 0, m = 0, s = 0;
-		StringTokenizer st = new StringTokenizer(value, " ");
-
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			int hl = token.indexOf('h');
-
-			if (hl > -1) {
-				h = Integer.parseInt(token.substring(0, hl).trim());
-			}
-
-			int mnl = token.indexOf("mn");
-
-			if (mnl > -1) {
-				m = Integer.parseInt(token.substring(0, mnl).trim());
-			}
-
-			int msl = token.indexOf("ms");
-
-			if (msl == -1) {
-				// Only check if ms was not found
-				int sl = token.indexOf('s');
-
-				if (sl > -1) {
-					s = Integer.parseInt(token.substring(0, sl).trim());
-				}
+		double seconds = 1;
+		if (isNotBlank(value)) {
+			try {
+				seconds = Double.parseDouble(value.trim()) / 1000;
+			} catch (NumberFormatException nfe) {
+				LOGGER.debug("Could not parse the duration \"" + value + "\"");
 			}
 		}
-
-		return (h * 3600) + (m * 60) + s;
+		return seconds;
 	}
 }
