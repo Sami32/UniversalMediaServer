@@ -172,6 +172,8 @@ public class RequestHandler implements Runnable {
 						}
 					} else if (headerLine.toLowerCase().contains("transfermode.dlna.org:")) {
 						request.setTransferMode(headerLine.substring(headerLine.toLowerCase().indexOf("transfermode.dlna.org:") + 22).trim());
+					} else if (renderer != null && (renderer.isSAMSUNG() || renderer.isPS4()) && !headerLine.toLowerCase().contains("transfermode.dlna.org:")) {
+						request.setTransferMode("Streaming");
 					} else if (headerLine.toLowerCase().contains("getcontentfeatures.dlna.org:")) {
 						request.setContentFeatures(headerLine.substring(headerLine.toLowerCase().indexOf("getcontentfeatures.dlna.org:") + 28).trim());
 					} else if (headerLine.toUpperCase().contains("TIMESEEKRANGE.DLNA.ORG: NPT=")) { // firmware 2.50+

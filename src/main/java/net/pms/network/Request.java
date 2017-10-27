@@ -567,7 +567,7 @@ public class Request extends HTTPResource {
 							CLoverride = remaining;
 						}
 
-						if (contentFeatures != null) {
+						if (contentFeatures != null || mediaRenderer.isSAMSUNG()) {
 							appendToHeader(responseHeader, "ContentFeatures.DLNA.ORG: " + dlna.getDlnaContentFeatures(mediaRenderer));
 						}
 

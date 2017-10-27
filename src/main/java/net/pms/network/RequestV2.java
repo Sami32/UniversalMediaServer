@@ -607,7 +607,7 @@ public class RequestV2 extends HTTPResource {
 						// Calculate the corresponding highRange (this is usually redundant).
 						highRange = lowRange + CLoverride - (CLoverride > 0 ? 1 : 0);
 
-						if (contentFeatures != null) {
+						if (contentFeatures != null || mediaRenderer.isSAMSUNG()) {
 							output.headers().set("ContentFeatures.DLNA.ORG", dlna.getDlnaContentFeatures(mediaRenderer));
 						}
 
