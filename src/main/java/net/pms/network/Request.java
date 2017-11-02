@@ -264,7 +264,7 @@ public class Request extends HTTPResource {
 	/**
 	 * Construct a proper HTTP response to a received request. After the response has been
 	 * created, it is sent and the resulting {@link ChannelFuture} object is returned.
-	 * See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">RFC-2616</a>
+	 * See <a href="https://tools.ietf.org/html/rfc7230#section-3.2">RFC-7230</a>
 	 * for HTTP header field definitions.
 	 * @param output The {@link HttpResponse} object that will be used to construct the response.
 	 * @param startStopListenerDelegate The {@link StartStopListenerDelegate} object that is used
@@ -541,7 +541,7 @@ public class Request extends HTTPResource {
 						// not known in advance, so DLNAMediaInfo.TRANS_SIZE will be returned instead.
 						long totalsize = dlna.length(mediaRenderer);
 
-						if (chunked && totalsize == DLNAMediaInfo.TRANS_SIZE) {
+						if (chunked) {
 							// In chunked mode we try to avoid arbitrary values.
 							totalsize = -1;
 						}
@@ -562,7 +562,9 @@ public class Request extends HTTPResource {
 
 							LOGGER.trace((chunked ? "Using chunked response. " : "") + "Sending " + bytes + " bytes.");
 
-							appendToHeader(responseHeader, "Content-Range: bytes " + lowRange + "-" + (highRange > -1 ? highRange : "*") + "/" + (totalsize > -1 ? totalsize : "*"));
+							if (!chunked) {
+								appendToHeader(responseHeader, "Content-Range: bytes " + lowRange + "-" + (highRange > -1 ? highRange : "*") + "/" + (totalsize > -1 ? totalsize : "*"));
+							}
 
 							// Content-Length refers to the current chunk size here, though in chunked
 							// mode if the request is open-ended and totalsize is unknown we omit it.

@@ -2571,7 +2571,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					if (player == null) {
 						wireshark.append(" size=").append(media.getSize());
 						addAttribute(sb, "size", media.getSize());
-					} else {
+					} else if (!mediaRenderer.isChunkedTransfer()) {
 						long transcoded_size = mediaRenderer.getTranscodedSize();
 						if (transcoded_size != 0) {
 							wireshark.append(" size=").append(transcoded_size);

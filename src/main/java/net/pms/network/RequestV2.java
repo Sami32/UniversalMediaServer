@@ -257,7 +257,7 @@ public class RequestV2 extends HTTPResource {
 	/**
 	 * Construct a proper HTTP response to a received request. After the response has been
 	 * created, it is sent and the resulting {@link ChannelFuture} object is returned.
-	 * See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">RFC-2616</a>
+	 * See <a href="https://tools.ietf.org/html/rfc7230#section-3.2">RFC-7230</a>
 	 * for HTTP header field definitions.
 	 *
 	 * @param ctx
@@ -578,7 +578,7 @@ public class RequestV2 extends HTTPResource {
 
 						// Determine the total size. Note: when transcoding the length is
 						// not known in advance, so DLNAMediaInfo.TRANS_SIZE will be returned instead.
-						if (chunked && totalsize == DLNAMediaInfo.TRANS_SIZE) {
+						if (chunked) {
 							// In chunked mode we try to avoid arbitrary values.
 							totalsize = -1;
 						}
@@ -599,7 +599,9 @@ public class RequestV2 extends HTTPResource {
 
 							LOGGER.trace((chunked ? "Using chunked response. " : "") + "Sending " + bytes + " bytes.");
 
-							output.headers().set(HttpHeaders.Names.CONTENT_RANGE, "bytes " + lowRange + "-" + (highRange > -1 ? highRange : "*") + "/" + (totalsize > -1 ? totalsize : "*"));
+							if (!chunked) {
+								output.headers().set(HttpHeaders.Names.CONTENT_RANGE, "bytes " + lowRange + "-" + (highRange > -1 ? highRange : "*") + "/" + (totalsize > -1 ? totalsize : "*"));
+							}
 
 							// Content-Length refers to the current chunk size here, though in chunked
 							// mode if the request is open-ended and totalsize is unknown we omit it.
@@ -1020,7 +1022,7 @@ public class RequestV2 extends HTTPResource {
 		} else if (inputStream != null) {
 			// There is an input stream to send as a response.
 
-			if (CLoverride > -2) {
+			if (CLoverride > -1) {
 				// Content-Length override has been set, send or omit as appropriate
 				if (CLoverride > -1 && CLoverride != DLNAMediaInfo.TRANS_SIZE) {
 					// Since PS3 firmware 2.50, it is wiser not to send an arbitrary Content-Length,
@@ -1028,7 +1030,7 @@ public class RequestV2 extends HTTPResource {
 					// transcoded video. Better to send no Content-Length at all.
 					output.headers().set(HttpHeaders.Names.CONTENT_LENGTH, "" + CLoverride);
 				}
-			} else {
+			} else if (CLoverride != -1) {
 				int contentLength = inputStream.available();
 				LOGGER.trace("Available Content-Length: {}", contentLength);
 				output.headers().set(HttpHeaders.Names.CONTENT_LENGTH, "" + contentLength);
