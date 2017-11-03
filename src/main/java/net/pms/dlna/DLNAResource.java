@@ -1966,8 +1966,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				}
 			} else if (
 					(mime.equals("video/x-mkv") || mime.equals(MATROSKA_TYPEMIME)) &&
-					(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4()) &&
-					mediaRenderer.isAccurateDLNAOrgPN()
+					(mediaRenderer.isSAMSUNG() || mediaRenderer.isPS4())
 				) {
 					dlnaOrgPnFlags = "DLNA.ORG_PN=MATROSKA";
 			} else if (mime.equals(MPEG_TYPEMIME)) {
