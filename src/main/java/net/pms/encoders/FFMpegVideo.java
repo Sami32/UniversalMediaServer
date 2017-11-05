@@ -167,6 +167,10 @@ public class FFMpegVideo extends Player {
 		}
 
 		filterChain.addAll(scalePadFilterChain);
+		if (!filterChain.isEmpty()) {
+			int i = filterChain.size() - 1;
+			filterChain.set(i, filterChain.get(i) + "[video]");
+		}
 
 		boolean override = true;
 		if (renderer instanceof RendererConfiguration.OutputOverride) {
@@ -236,15 +240,23 @@ public class FFMpegVideo extends Player {
 					}
 				}
 			} else if (params.sid.getType().isPicture()) {
+				// Embedded
 				if (params.sid.getId() < 100) {
-					// Embedded
-					subsFilter.append("[0:v][0:s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay");
+					if (!filterChain.isEmpty()) {
+						subsFilter.append("[0:s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("][video]scale2ref[sub][vid];[vid][sub]overlay");
+					} else {
+						subsFilter.append("[0:v][0:s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay");
+					}
 					isSubsManualTiming = false;
 				} else {
 					// External
 					videoFilterOptions.add("-i");
 					videoFilterOptions.add(params.sid.getExternalFile().getAbsolutePath());
-					subsFilter.append("[0:v][1:s]overlay"); // this assumes the sub file is single-language
+					if (filterChain.isEmpty()) {
+						subsFilter.append("[0:v][1:s]overlay"); // this assumes the sub file is single-language
+					} else {
+						subsFilter.append("[1:s][video]scale2ref[sub][vid];[vid][sub]overlay");
+					}
 				}
 			}
 			if (isNotBlank(subsFilter)) {
@@ -412,7 +424,14 @@ public class FFMpegVideo extends Player {
 				transcodeOptions.add("mpeg2video");
 			}
 
-			if (!customFFmpegOptions.contains("-f")) {
+			if (params.aid == null && !filename.toLowerCase().endsWith(".wtv")) {
+				transcodeOptions.add("-shortest");
+			}
+			if (!customFFmpegOptions.contains("-f ")) {
+				if (configuration.isDisableSubtitles() || params.sid == null || params.sid.getType().isPicture() || avisynth()) {
+					transcodeOptions.add("-sn");
+				}
+				transcodeOptions.add("-dn");
 				// Output file format
 				transcodeOptions.add("-f");
 				if (dtsRemux) {
