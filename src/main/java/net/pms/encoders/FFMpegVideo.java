@@ -728,14 +728,14 @@ public class FFMpegVideo extends Player {
 				}
 
 				// It has been reported that non-PS3 renderers prefer keyint 5 but prefer it for PS3 because it lowers the average bitrate
-				mpeg2Options = gop + " -q:v 1 -qmin 2 -qmax 3";
+				mpeg2Options = gop + " -qmin 1 -qmax 3 -bf 2 -b_strategy 1";
 
-				if (isWireless || maximumBitrate < 70) {
+				if ((isWireless || maximumBitrate < 70) && media.getBitrate() > 9800000) {
 					// Lower quality for 720p+ content
 					if (media.getWidth() > 1280) {
-						mpeg2Options = gop + " -qmax 7 -qmin 2";
+						mpeg2Options = gop + " -qmax 7 -qmin 2 -bf 2 -b_strategy 1";
 					} else if (media.getWidth() > 720) {
-						mpeg2Options = gop + " -qmax 5 -qmin 2";
+						mpeg2Options = gop + " -qmax 5 -qmin 1 -bf 2 -b_strategy 1";
 					}
 				}
 			}
