@@ -28,6 +28,7 @@ import java.awt.event.ItemListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -173,10 +174,6 @@ public class FFMpegVideo extends Player {
 		}
 
 		filterChain.addAll(scalePadFilterChain);
-		if (!filterChain.isEmpty()) {
-			int i = filterChain.size() - 1;
-			filterChain.set(i, filterChain.get(i) + "[video]");
-		}
 
 		boolean override = true;
 		if (renderer instanceof RendererConfiguration.OutputOverride) {
@@ -184,11 +181,11 @@ public class FFMpegVideo extends Player {
 			override = or.addSubtitles();
 		}
 
-		if (!isDisableSubtitles(params) && override) {
+		if (!isDisableSubtitles(params) && override && params.sid != null) {
 			boolean isSubsManualTiming = true;
 			DLNAMediaSubtitle convertedSubs = dlna.getMediaSubtitle();
 			StringBuilder subsFilter = new StringBuilder();
-			if (params.sid != null && params.sid.getType().isText()) {
+			if (params.sid.getType().isText()) {
 				boolean isSubsASS = params.sid.getType() == SubtitleType.ASS;
 				String originalSubsFilename = null;
 				if (is3D) {
@@ -210,7 +207,11 @@ public class FFMpegVideo extends Player {
 				}
 
 				if (originalSubsFilename != null) {
-					subsFilter.append("subtitles=").append(StringUtil.ffmpegEscape(originalSubsFilename));
+					String scaleLabel = null;
+					if (filterChain != null && !filterChain.isEmpty()) {
+						scaleLabel = "[video]";
+					}
+					subsFilter.append(scaleLabel + "subtitles=").append(StringUtil.ffmpegEscape(originalSubsFilename));
 					if (params.sid.isEmbedded()) {
 						subsFilter.append(":si=").append(params.sid.getId());
 					}
@@ -242,49 +243,54 @@ public class FFMpegVideo extends Player {
 						subsFilter.append(",Outline=").append(configuration.getAssOutline());
 						subsFilter.append(",Shadow=").append(configuration.getAssShadow());
 						subsFilter.append(",MarginV=").append(configuration.getAssMargin());
+						// [V4+ Styles] format: FontName,PrimaryColour,SecondaryColour,OutlineColour,BackColour,FontSize,Bold,Italic,Underline,StrikeOut,Spacing,Angle,BorderStyle,Alignment,MarginL,MarginR,MarginV,Encoding,ScaleX,ScaleY,Outline,Shadow
+						subsFilter.append(",Alignment=2");
 						subsFilter.append("'");
 					}
 				}
 			} else if (params.sid.getType().isPicture()) {
+				int streamNr = 0;
+				if (params.aid == null && !dlna.getFileName().toLowerCase().endsWith(".wtv")) {
+					streamNr = 1;
+				}
 				// Embedded
-				if (params.sid.getId() < 100) {
-					if (!filterChain.isEmpty()) {
-						subsFilter.append("[0:s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("][video]scale2ref[sub][vid];[vid][sub]overlay");
+				if (params.sid.isEmbedded()) {
+					if (filterChain != null && !filterChain.isEmpty()) {
+						subsFilter.append("[").append(String.valueOf(streamNr)).append(":s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("][video]scale2ref[sub][vid];[vid][sub]overlay[overlayedsub]");
 					} else {
-						subsFilter.append("[0:v][0:s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay");
+						subsFilter.append("[").append(String.valueOf(streamNr)).append(":v:0][").append(String.valueOf(streamNr)).append(":s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay[overlayedsub]");
 					}
 					isSubsManualTiming = false;
-				} else {
+				} else if (params.sid.isExternal()) {
 					// External
 					videoFilterOptions.add("-i");
 					videoFilterOptions.add(params.sid.getExternalFile().getAbsolutePath());
-					if (filterChain.isEmpty()) {
-						subsFilter.append("[0:v][1:s]overlay"); // this assumes the sub file is single-language
+					if (filterChain == null || filterChain.isEmpty()) {
+						subsFilter.append("[").append(String.valueOf(streamNr)).append(":v:0][").append(String.valueOf(streamNr + 1)).append(":s]overlay[overlayedsub]"); // this assumes the sub file is single-language
 					} else {
-						subsFilter.append("[1:s][video]scale2ref[sub][vid];[vid][sub]overlay");
+						subsFilter.append("[").append(String.valueOf(streamNr + 1)).append(":s:0][video]scale2ref[sub][vid];[vid][sub]overlay[overlayedsub]");
 					}
 				}
 			}
-			if (isNotBlank(subsFilter)) {
-				if (params.timeseek > 0 && isSubsManualTiming) {
-					filterChain.add("setpts=PTS+" + params.timeseek + "/TB"); // based on https://trac.ffmpeg.org/ticket/2067
-				}
-
+			if (isNotBlank(subsFilter) && params.timeseek > 0 && isSubsManualTiming) {
+				filterChain.add("setpts=PTS+" + params.timeseek + "/TB[video]"); // based on https://trac.ffmpeg.org/ticket/2067
 				filterChain.add(subsFilter.toString());
-				if (params.timeseek > 0 && isSubsManualTiming) {
-					filterChain.add("setpts=PTS-STARTPTS"); // based on https://trac.ffmpeg.org/ticket/2067
-				}
+				filterChain.add("[overlayedsub]setpts=PTS-STARTPTS[osub]"); // based on https://trac.ffmpeg.org/ticket/2067
+			} else if (filterChain != null && !filterChain.isEmpty()) {
+				int i = filterChain.size() - 1;
+				filterChain.set(i, filterChain.get(i) + "[video]");
 			}
 		}
 
 		String overrideVF = renderer.getFFmpegVideoFilterOverride();
 		if (StringUtils.isNotEmpty(overrideVF)) {
-			filterChain.add(overrideVF);
+//			filterChain.add(overrideVF);
 		}
 
 		// Convert 3D video to the other output 3D format or to 2D using "Output3DFormat = ml" or "Output3DFormat = mr" in the renderer conf
 		String stereoLayout = null;
 		String renderer3DOutputFormat = null;
+		String label = null;
 		if (media.get3DLayout() != null) {
 			stereoLayout = media.get3DLayout().toString().toLowerCase(Locale.ROOT);
 			renderer3DOutputFormat = params.mediaRenderer.getOutput3DFormat();
@@ -296,12 +302,21 @@ public class FFMpegVideo extends Player {
 			isNotBlank(renderer3DOutputFormat) &&
 			!stereoLayout.equals(renderer3DOutputFormat)
 		) {
-			filterChain.add("stereo3d=" + stereoLayout + ":" + renderer3DOutputFormat);
+			int i = filterChain.size() - 1;
+			if (filterChain.get(i).endsWith("[video]")) {
+				label = "[video]";
+			} else if (filterChain.get(i).endsWith("[osub]")) {
+				label = "[osub]";
+			} else if (filterChain.get(i).endsWith("[overlayedsub]")) {
+				label = "[overlayedsub]";
+			}
+			filterChain.add(label + "stereo3d=" + stereoLayout + ":" + renderer3DOutputFormat + "[3D]");
 		}
 
 		if (filterChain.size() > 0) {
 			videoFilterOptions.add("-filter_complex");
 			videoFilterOptions.add(StringUtils.join(filterChain, ","));
+			Collections.replaceAll(videoFilterOptions, "],", "];");
 		}
 
 		return videoFilterOptions;
@@ -431,7 +446,15 @@ public class FFMpegVideo extends Player {
 						transcodeOptions.add("-strict");
 						transcodeOptions.add("experimental");
 					}
-				} else if (renderer.isTranscodeToAAC()  && !(params.aid != null && params.aid.isAACLC() && configuration.isAudioRemuxAACLC())) {
+				} else if (
+						renderer.isTranscodeToAAC()  &&
+						!(
+							params.aid != null &&
+							params.aid.isAACLC() &&
+							configuration.isAudioRemuxAACLC() &&
+							params.aid.getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
+						)
+					) {
 					if (
 						!customFFmpegOptions.contains("-c:a ") &&
 						!customFFmpegOptions.contains("-codec:a") &&
@@ -964,7 +987,6 @@ public class FFMpegVideo extends Player {
 		}
 
 		List<String> cmdList = new ArrayList<>();
-		boolean avisynth = avisynth();
 		if (params.timeseek > 0) {
 			params.waitbeforestart = 1;
 		} else if (renderer.isTranscodeFastStart()){
@@ -990,8 +1012,10 @@ public class FFMpegVideo extends Player {
 		if (!renderer.isTranscodeToMP4()) {
 			cmdList.add("-fflags");
 			cmdList.add("+genpts");
-			cmdList.add("-async");
-			cmdList.add("1");
+			if (params.aid != null) {
+				cmdList.add("-async");
+				cmdList.add("1");
+			}
 		}
 
 		// Avoid H.264 transcoding fail, at least when generating a MP4 file with FFmpeg and maybe others
@@ -1011,8 +1035,8 @@ public class FFMpegVideo extends Player {
 				params.aid.isHEAAC()
 			)
 		) {
-			transcodeOptions.add("-strict");
-			transcodeOptions.add("1"); // strict compliance to the specifications
+			cmdList.add("-strict");
+			cmdList.add("1"); // strict compliance to the specifications
 		}
 
 		if (params.aid != null && (params.aid.isAACLC() && aacRemux || params.aid.isAC3() && ac3Remux || params.aid.isDTS() && dtsRemux || (params.aid.isDTS() || params.aid.isDTSHD()) && dtscoreRemux)) {
@@ -1108,20 +1132,20 @@ public class FFMpegVideo extends Player {
 
 		if (
 			!configuration.isDisableSubtitles() &&
-			!avisynth &&
+			!avisynth() &&
 			params.sid != null &&
 			// Should be modified when this PR will be merged: https://github.com/Sami32/UniversalMediaServer/pull/8
 			// (params.sid.getType() == SubtitleType.DVBSUB || params.sid.getType() == SubtitleType.TX3G || params.sid.getType() == SubtitleType.TELETEXT)
 			(
-				renderer.isTranscodeToMP4() ||
-				renderer.isTranscodeToMPEGTS()
-//				|| renderer.isTranscodeToMKV()
+				params.sid.getType() == SubtitleType.DVBSUB ||
+				params.sid.getType() == SubtitleType.TX3G ||
+				params.sid.getType() == SubtitleType.TELETEXT
 			)
 		) {
 			cmdList.add("-fix_sub_duration");
 		}
 		cmdList.add("-i");
-		if (avisynth && !filename.toLowerCase().endsWith(".iso")) {
+		if (avisynth() && !filename.toLowerCase().endsWith(".iso")) {
 			File avsFile = AviSynthFFmpeg.getAVSScript(filename, params.sid, params.fromFrame, params.toFrame, frameRateRatio, frameRateNumber, configuration);
 			cmdList.add(ProcessUtil.getShortFileNameIfWideChars(avsFile.getAbsolutePath()));
 		} else {
@@ -1234,17 +1258,42 @@ public class FFMpegVideo extends Player {
 
 		// Apply any video filters and associated options. These should go
 		// after video input is specified and before output streams are mapped.
-		cmdList.addAll(getVideoFilterOptions(dlna, media, params));
+		List<String> filterOptions = getVideoFilterOptions(dlna, media, params);
+		cmdList.addAll(filterOptions);
 
 		// Map the output streams if necessary
-		if (media.getAudioTracksList().size() > 1) {
-			// Set the video stream
-			cmdList.add("-map");
-			cmdList.add("0:v");
+		// Set the proper video stream
+		String filtergraphend = null;
+		if (filterOptions != null && !filterOptions.isEmpty()) {
+			filtergraphend = filterOptions.get(filterOptions.size() - 1);
+		}
+		cmdList.add("-map");
+		if (filtergraphend != null) {
+			if (filtergraphend.endsWith("[osub]")) {
+				cmdList.add("[osub]");
+			} else if (filtergraphend.endsWith("[overlayedsub]")) {
+			cmdList.add("[overlayedsub]");
+			} else if (filtergraphend.endsWith("[video]")) {
+				cmdList.add("[video]");
+			} else if (filtergraphend.endsWith("[3D]")) {
+				cmdList.add("[3D]");
+			} else if (params.aid != null) {
+				cmdList.add("0:v:0");
+			} else if (params.aid == null) {
+				cmdList.add("1:v:0");
+			}
+		} else if (params.aid != null) {
+			cmdList.add("0:v:0");
+		} else if (params.aid == null) {
+			cmdList.add("1:v:0");
+		}
 
-			// Set the proper audio stream
-			cmdList.add("-map");
+		// Set the proper audio stream
+		cmdList.add("-map");
+		if (params.aid != null) {
 			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.aid)));
+		} else {
+			cmdList.add("0:a:0");
 		}
 		cmdList.add("-map_chapters");
 		cmdList.add("-1");

@@ -181,7 +181,7 @@ public class CodecUtil {
 			}
 
 			// The font is specified by the name. Check if it is registered in the OS.
-			String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+			final String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 			for (String font : fonts) {
 				if (font.equals(fontName)) {
 					return font;
