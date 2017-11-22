@@ -140,6 +140,7 @@ public class FFMpegVideo extends Player {
 			// Make sure we didn't exceed the renderer's maximum resolution, or don't have a too little resolution not supported by many renderers
 			// And make sure that the values are divisible by 2, as it's mandatory while transcoding to H.264 YUV420p
 		if (
+			!isCPU4Kable() && (media.getWidth() > 1920 || media.getHeight() > 1152) ||
 			isResolutionTooHighForRenderer ||
 			scaleHeight > renderer.getMaxVideoHeight() ||
 			scaleWidth  > renderer.getMaxVideoWidth() ||
@@ -151,10 +152,14 @@ public class FFMpegVideo extends Player {
 		) {
 			scaleHeight = renderer.getMaxVideoHeight();
 			scaleWidth  = renderer.getMaxVideoWidth();
+			if (!isCPU4Kable()) {
+				scaleHeight = 1080;
+				scaleWidth  = 1920;
+			}
 			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight + ":force_original_aspect_ratio=decrease:flags=lanczos+accurate_rnd,bwdif=mode=send_frame");
 		}
 
-		if (renderer.isTranscodeToMPEGPS() && (media.getWidth() > 1920 || media.getHeight() > 1088) && (renderer.getMaxVideoWidth() > 1920 || renderer.getMaxVideoHeight() > 1088)) {
+		if (renderer.isTranscodeToMPEGPS() && (media.getWidth() > 1920 || media.getHeight() > 1152) && (renderer.getMaxVideoWidth() > 1920 || renderer.getMaxVideoHeight() > 1152)) {
 			scaleWidth = 1920;
 			scaleHeight = 1080;
 			scalePadFilterChain.add("scale=" + scaleWidth + ":" + scaleHeight + ":force_original_aspect_ratio=decrease:flags=lanczos+accurate_rnd,bwdif=mode=send_frame");

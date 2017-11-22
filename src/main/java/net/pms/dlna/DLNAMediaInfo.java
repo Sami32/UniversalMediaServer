@@ -591,7 +591,7 @@ public class DLNAMediaInfo implements Cloneable {
 		 * not use MediaInfo, so do not make any changes that remove or
 		 * minimize the amount of text given by FFmpeg here.
 		 */
-		String args[] = new String[14];
+		String args[] = new String[16];
 		args[0] = getFfmpegPath();
 		File file = media.getFile();
 
