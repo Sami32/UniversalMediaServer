@@ -190,7 +190,14 @@ public class FFMpegVideo extends Player {
 			boolean isSubsManualTiming = true;
 			DLNAMediaSubtitle convertedSubs = dlna.getMediaSubtitle();
 			StringBuilder subsFilter = new StringBuilder();
-			if (params.sid.getType().isText()) {
+			if (
+				params.sid.getType().isText() &&
+				!(
+					params.sid.getType() == SubtitleType.EIA608 ||
+					params.sid.getType() == SubtitleType.EIA708 ||
+					params.sid.getType() == SubtitleType.TELETEXT // Need a FFmpeg build with LIBZVBI and special command line to decode them, see https://ffmpeg.zeranoe.com/forum/viewtopic.php?t=1390
+				)
+			) {
 				boolean isSubsASS = params.sid.getType() == SubtitleType.ASS;
 				String originalSubsFilename = null;
 				if (is3D) {
@@ -525,6 +532,17 @@ public class FFMpegVideo extends Player {
 					} else {
 						transcodeOptions.add("libx265");
 					}
+					if (
+						configuration.isDisableSubtitles() &&
+						params.sid != null &&
+						(
+							params.sid.getType() == SubtitleType.EIA608 ||
+							params.sid.getType() == SubtitleType.EIA708
+						)
+					) {
+						transcodeOptions.add("-a53cc");
+						transcodeOptions.add("0");
+					}
 					transcodeOptions.add("-tune");
 					if (media.isH265()) {
 						transcodeOptions.add("fastdecode");
@@ -553,13 +571,25 @@ public class FFMpegVideo extends Player {
 			} else if (!dtsRemux) {
 				transcodeOptions.add("-c:v");
 				transcodeOptions.add("mpeg2video");
+			} else if ((renderer.isTranscodeToMPEG2() || dtsRemux) && configuration.isDisableSubtitles()) {
+				if (
+					params.sid != null &&
+					(
+						params.sid.getType() == SubtitleType.EIA608 ||
+						params.sid.getType() == SubtitleType.EIA708 // not yet supported by FFmpeg, should be in 2018
+					)
+				) {
+					// Must be ATSC compatible format. Set by default on recent FFmpeg versions except for NVENC
+					transcodeOptions.add("-a53cc");
+					transcodeOptions.add("0");
+				}
 			}
 
 			if (params.aid == null && !filename.toLowerCase().endsWith(".wtv")) {
 				transcodeOptions.add("-shortest");
 			}
 			if (!customFFmpegOptions.contains("-f ")) {
-				if (configuration.isDisableSubtitles() || params.sid == null || params.sid.getType().isPicture() || avisynth()) {
+				if (configuration.isDisableSubtitles() || params.sid == null) {
 					transcodeOptions.add("-sn");
 				}
 				transcodeOptions.add("-dn");
@@ -577,6 +607,8 @@ public class FFMpegVideo extends Player {
 					transcodeOptions.add("matroska");
 					transcodeOptions.add("-map_metadata"); // https://trac.ffmpeg.org/ticket/2474
 					transcodeOptions.add("-1");
+				} else if (renderer.isTranscodeToMPEGTS()) {
+					transcodeOptions.add("mpegts");
 				} else {
 					transcodeOptions.add("vob");
 				}
@@ -1139,8 +1171,6 @@ public class FFMpegVideo extends Player {
 			!configuration.isDisableSubtitles() &&
 			!avisynth() &&
 			params.sid != null &&
-			// Should be modified when this PR will be merged: https://github.com/Sami32/UniversalMediaServer/pull/8
-			// (params.sid.getType() == SubtitleType.DVBSUB || params.sid.getType() == SubtitleType.TX3G || params.sid.getType() == SubtitleType.TELETEXT)
 			(
 				params.sid.getType() == SubtitleType.DVBSUB ||
 				params.sid.getType() == SubtitleType.TX3G ||

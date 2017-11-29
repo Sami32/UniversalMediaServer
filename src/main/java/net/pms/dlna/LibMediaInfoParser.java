@@ -79,6 +79,7 @@ public class LibMediaInfoParser {
 				StreamType audio = StreamType.Audio;
 				StreamType image = StreamType.Image;
 				StreamType text = StreamType.Text;
+				StreamType other = StreamType.Other;
 				DLNAMediaAudio currentAudioTrack = new DLNAMediaAudio();
 				DLNAMediaSubtitle currentSubTrack;
 				media.setSize(file.length());
@@ -197,6 +198,11 @@ public class LibMediaInfoParser {
 								}
 							}
 						}
+
+						value = MI.Get(video, i, "Format_Profile");
+						if (isNotBlank(value) && media.getCodecV() != null && media.getCodecV().equals(FormatConfiguration.H264)) {
+							media.setAvcLevel(getAvcLevel(value));
+						}
 					}
 				}
 
@@ -213,7 +219,7 @@ public class LibMediaInfoParser {
 						if (isNotBlank(value) && value.startsWith("Windows Media Audio 10")) {
 							currentAudioTrack.setCodecA(FormatConfiguration.WMA10);
 						}
-						currentAudioTrack.setLang(getLang(MI.Get(audio, i, "Language/String")));
+						currentAudioTrack.setLang(getLang(MI.Get(audio, i, "Language")));
 						currentAudioTrack.setAudioTrackTitleFromMetadata((MI.Get(audio, i, "Title")).trim());
 						currentAudioTrack.getAudioProperties().setBitRate(MI.Get(audio, i, "BitRate"));
 						value = MI.Get(audio, i, "Channel(s)_Original");
@@ -253,9 +259,9 @@ public class LibMediaInfoParser {
 						}
 
 						// Special check for OGM: MediaInfo reports specific Audio/Subs IDs (0xn) while mencoder does not
-						value = MI.Get(audio, i, "ID/String");
+						value = MI.Get(audio, i, "ID");
 						if (isNotBlank(value)) {
-							if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
+							if (!FormatConfiguration.OGG.equals(media.getContainer())) {
 								currentAudioTrack.setId(getSpecificID(value));
 							} else {
 								currentAudioTrack.setId(media.getAudioTracksList().size());
@@ -268,6 +274,15 @@ public class LibMediaInfoParser {
 								currentAudioTrack.setTrack(Integer.parseInt(value));
 							} catch (NumberFormatException nfe) {
 								LOGGER.debug("Could not parse track \"" + value + "\"");
+							}
+						}
+
+						value = MI.Get(audio, i, "BitDepth");
+						if (isNotBlank(value)) {
+							try {
+								currentAudioTrack.setBitsperSample(Integer.parseInt(value));
+							} catch (NumberFormatException nfe) {
+								LOGGER.debug("Could not parse bits per sample \"" + value + "\"");
 							}
 						}
 
@@ -311,21 +326,41 @@ public class LibMediaInfoParser {
 				if (subTracks > 0) {
 					for (int i = 0; i < subTracks; i++) {
 						currentSubTrack = new DLNAMediaSubtitle();
-						currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "Format")));
-						currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "CodecID")));
-						currentSubTrack.setLang(getLang(MI.Get(text, i, "Language/String")));
+						value = MI.Get(text, i, "CodecID");
+						if (isNotBlank(value)) {
+							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(value));
+						} else {
+							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "Format")));
+						}
+						currentSubTrack.setLang(getLang(MI.Get(text, i, "Language")));
 						currentSubTrack.setSubtitlesTrackTitleFromMetadata((MI.Get(text, i, "Title")).trim());
 						// Special check for OGM: MediaInfo reports specific Audio/Subs IDs (0xn) while mencoder does not
-						value = MI.Get(text, i, "ID/String");
-						if (isNotBlank(value)) {
-							if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
-								currentSubTrack.setId(getSpecificID(value));
-							} else {
-								currentSubTrack.setId(media.getSubtitleTracksList().size());
+						value = MI.Get(text, i, "ID");
+						if (isNotBlank(value) && value.contains("-") && !(value.contains("-CC") || value.contains("-T") || value.contains("-XDS"))) {
+							currentSubTrack.setId(getSpecificID(value));
+						} else {
+							currentSubTrack.setId(media.getSubtitleTracksList().size());
+						}
+						addSub(currentSubTrack, media);
+					}
+				} else { // Check for teletext
+					subTracks = MI.Count_Get(other);
+					if (subTracks > 0) {
+						for (int i = 0; i < subTracks; i++) {
+							currentSubTrack = new DLNAMediaSubtitle();
+							value = MI.Get(other, i, "Format");
+							if (value.startsWith("Teletext")) {
+								currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(value));
+								currentSubTrack.setLang(getLang(MI.Get(other, i, "Language")));
+								value = MI.Get(other, i, "ID");
+								if (isNotBlank(value) && value.contains("-")) {
+									currentSubTrack.setId(getSpecificID(value));
+								} else {
+									currentSubTrack.setId(media.getSubtitleTracksList().size());
+								}
+								addSub(currentSubTrack, media);
 							}
 						}
-
-						addSub(currentSubTrack, media);
 					}
 				}
 
@@ -943,16 +978,20 @@ public class LibMediaInfoParser {
 
 	public static int getSpecificID(String value) {
 		// If ID is given as 'streamID-substreamID' use the second (which is hopefully unique).
-		// For example in vob audio ID can be '189 (0xBD)-32 (0x80)' and text ID '189 (0xBD)-128 (0x20)'
-		int end = value.lastIndexOf("(0x");
-		if (end > -1) {
-			int start = value.lastIndexOf('-') + 1;
-			value = value.substring(start > end ? 0 : start, end);
+		// For example in VOB files, audio ID can be '189-128' and text ID '189-32'
+		if (value.contains("-")) {
+			value = value.substring(value.lastIndexOf('-') + 1).trim();
+		} else {
+			value = value.trim();
 		}
 
-		value = value.trim();
-		int id = Integer.parseInt(value);
-		return id;
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			LOGGER.debug("Could not parse the stream ID \"{}\": {}", value, e.getMessage());
+			LOGGER.trace("", e);
+			return 0;
+		}
 	}
 
 	public static String getSampleFrequency(String value) {

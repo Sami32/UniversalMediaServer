@@ -1671,8 +1671,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 			String audioTrackTitle = "";
 			if (
-				getMediaAudio().getAudioTrackTitleFromMetadata() != null &&
-				!"".equals(getMediaAudio().getAudioTrackTitleFromMetadata()) &&
+				StringUtils.isNotBlank(getMediaAudio().getAudioTrackTitleFromMetadata()) &&
+				getFormat() != null &&
+				!getFormat().isVideo() &&
 				mediaRenderer != null &&
 				mediaRenderer.isShowAudioMetadata()
 			) {
@@ -1689,11 +1690,6 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			!configurationSpecificToRenderer.hideSubsInfo()
 		) {
 			subtitleFormat = media_subtitle.getType().getDescription();
-			if ("(Advanced) SubStation Alpha".equals(subtitleFormat)) {
-				subtitleFormat = "SSA";
-			} else if ("Blu-ray subtitles".equals(subtitleFormat)) {
-				subtitleFormat = "PGS";
-			}
 
 			subtitleLanguage = "/" + media_subtitle.getLangFullName();
 			if ("/Undetermined".equals(subtitleLanguage)) {
