@@ -682,17 +682,19 @@ public class FFMpegVideo extends Player {
 				);
 			}
 
-			if (!customFFmpegOptions.contains("-bufsize")) {
+			if (!customFFmpegOptions.contains("-bufsize") && bufSize > 0) {
 				videoBitrateOptions.add("-bufsize");
 				videoBitrateOptions.add(String.valueOf(bufSize) + "k");
 			}
 
-			if (defaultMaxBitrates[0] > 0 && !customFFmpegOptions.contains("-maxrate")) {
+			if (!customFFmpegOptions.contains("-maxrate") && bufSize > 0) {
 				videoBitrateOptions.add("-maxrate");
-				if (params.mediaRenderer.isTranscodeToMPEGPS()) {
-					videoBitrateOptions.add("9800k");
-				} else {
+				if (defaultMaxBitrates[0] > 0 && !params.mediaRenderer.isTranscodeToMPEGPS()) {
 					videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
+				} else if (!params.mediaRenderer.isTranscodeToMPEGPS()) {
+					videoBitrateOptions.add("40M");
+				} else if (params.mediaRenderer.isTranscodeToMPEGPS()) {
+					videoBitrateOptions.add("9800k");
 				}
 			}
 		}
