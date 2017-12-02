@@ -595,23 +595,30 @@ public class DLNAMediaInfo implements Cloneable {
 		args[0] = getFfmpegPath();
 		File file = media.getFile();
 
-		args[1] = "-ss";
-		if (resume) {
-			args[2] = Integer.toString((int) getDurationInSeconds());
+		args[1] = "-loglevel";
+		if (LOGGER.isTraceEnabled()) {
+			args[2] = "info"; // Could be changed to "verbose" or "debug" if "info" level is not enough
 		} else {
-			args[2] = Integer.toString((int) Math.min(configuration.getThumbnailSeekPos(), getDurationInSeconds()));
+			args[2] = "fatal";
+		}
+		
+		args[3] = "-ss";
+		if (resume) {
+			args[4] = Integer.toString((int) getDurationInSeconds());
+		} else {
+			args[4] = Integer.toString((int) Math.min(configuration.getThumbnailSeekPos(), getDurationInSeconds()));
 		}
 
-		args[3] = "-i";
+		args[5] = "-i";
 
 		if (file != null) {
-			args[4] = ProcessUtil.getShortFileNameIfWideChars(file.getAbsolutePath());
+			args[6] = ProcessUtil.getShortFileNameIfWideChars(file.getAbsolutePath());
 		} else {
-			args[4] = "-";
+			args[6] = "-";
 		}
 
-		args[5] = "-an";
-		args[6] = "";
+		args[7] = "-an";
+		args[8] = "";
 
 		// Thumbnail resolution
 		int thumbnailWidth  = 320;
@@ -625,18 +632,18 @@ public class DLNAMediaInfo implements Cloneable {
 			isThumbnailPadding = renderer.isThumbnailPadding();
 		}
 
-		args[7] = "-filter:v";
+		args[9] = "-filter:v";
 		if (isThumbnailPadding) {
-			args[8] = "scale='if(gt(a," + thumbnailRatio + ")," + thumbnailWidth + ",-2)':'if(gt(a," + thumbnailRatio + "),-2," + thumbnailHeight + ")',pad=" + thumbnailWidth + ":" + thumbnailHeight + ":-1:-1";
+			args[10] = "scale='if(gt(a," + thumbnailRatio + ")," + thumbnailWidth + ",-2)':'if(gt(a," + thumbnailRatio + "),-2," + thumbnailHeight + ")',pad=" + thumbnailWidth + ":" + thumbnailHeight + ":-1:-1";
 		} else {
-			args[8] = "scale='if(gt(a," + thumbnailRatio + ")," + thumbnailWidth + ",-2)':'if(gt(a," + thumbnailRatio + "),-2," + thumbnailHeight + ")'";
+			args[10] = "scale='if(gt(a," + thumbnailRatio + ")," + thumbnailWidth + ",-2)':'if(gt(a," + thumbnailRatio + "),-2," + thumbnailHeight + ")'";
 		}
 
-		args[9] = "-frames:v";
-		args[10] = "1";
-		args[11] = "-f";
-		args[12] = "image2";
-		args[13] = "pipe:";
+		args[11] = "-frames:v";
+		args[12] = "1";
+		args[13] = "-f";
+		args[14] = "image2";
+		args[15] = "pipe:";
 
 		// FIXME MPlayer should not be used if thumbnail generation is disabled
 		if (
@@ -644,8 +651,8 @@ public class DLNAMediaInfo implements Cloneable {
 			renderer != null && !renderer.isThumbnails() ||
 			configuration.isUseMplayerForVideoThumbs()
 		) {
-			args[2] = "0";
-			for (int i = 5; i <= 13; i++) {
+			args[4] = "0";
+			for (int i = 5; i <= 15; i++) {
 				args[i] = "";
 			}
 		}
@@ -690,25 +697,33 @@ public class DLNAMediaInfo implements Cloneable {
 
 	private ProcessWrapperImpl getMplayerThumbnail(InputFile media, boolean resume, RendererConfiguration renderer) throws IOException {
 		File file = media.getFile();
-		String args[] = new String[14];
+		String args[] = new String[16];
 		args[0] = configuration.getMplayerPath();
-		args[1] = "-ss";
+
+		args[1] = "";
+		args[2] = "";
+
+		args[3] = "-ss";
 		if (resume) {
-			args[2] = "" + (int) getDurationInSeconds();
+			args[4] = "" + (int) getDurationInSeconds();
 		} else {
-			args[2] = "" + configuration.getThumbnailSeekPos();
+			args[4] = "" + configuration.getThumbnailSeekPos();
 		}
 
-		args[3] = "-quiet";
+		args[5] = "-really-quiet";
 
 		if (file != null) {
-			args[4] = ProcessUtil.getShortFileNameIfWideChars(file.getAbsolutePath());
+			args[6] = ProcessUtil.getShortFileNameIfWideChars(file.getAbsolutePath());
 		} else {
-			args[4] = "-";
+			args[6] = "-";
 		}
 
-		args[5] = "-msglevel";
-		args[6] = "all=4";
+		args[7] = "-msglevel";
+		if (LOGGER.isTraceEnabled()) {
+			args[8] = "all=0";
+		} else {
+			args[8] = "all=4";
+		}
 
 		int thumbnailWidth  = 320;
 		int thumbnailHeight = 180;
@@ -718,21 +733,21 @@ public class DLNAMediaInfo implements Cloneable {
 			thumbnailHeight    = renderer.getThumbnailHeight();
 			isThumbnailPadding = renderer.isThumbnailPadding();
 		}
-		args[7] = "-vf";
+		args[9] = "-vf";
 		if (isThumbnailPadding) {
-			args[8] = "scale=" + thumbnailWidth + ":-2,expand=:" + thumbnailHeight;
+			args[10] = "scale=" + thumbnailWidth + ":-2,expand=:" + thumbnailHeight;
 		} else {
-			args[8] = "scale=" + thumbnailWidth + ":-2";
+			args[10] = "scale=" + thumbnailWidth + ":-2";
 		}
 
-		args[9] = "-frames";
-		args[10] = "1";
-		args[11] = "-vo";
+		args[11] = "-frames";
+		args[12] = "1";
+		args[13] = "-vo";
 		String frameName = "" + media.hashCode();
 		frameName = "mplayer_thumbs:subdirs=\"" + frameName + "\"";
 		frameName = frameName.replace(',', '_');
-		args[12] = "jpeg:outdir=" + frameName;
-		args[13] = "-nosound";
+		args[14] = "jpeg:outdir=" + frameName;
+		args[15] = "-nosound";
 		OutputParams params = new OutputParams(configuration);
 		params.workDir = configuration.getTempFolder();
 		params.maxBufferSize = 1;
