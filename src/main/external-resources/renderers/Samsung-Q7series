@@ -1,0 +1,88 @@
+#----------------------------------------------------------------------------
+# Profile for Samsung Q7 Series TVs.
+# See DefaultRenderer.conf for descriptions of all the available options.
+#
+# Support MPO images as well (image/mpo)
+# issues: http://www.universalmediaserver.com/forum/viewtopic.php?f=9&t=11645&p=34468#p34468
+#           http://www.universalmediaserver.com/forum/viewtopic.php?f=9&t=11649
+
+RendererName = Samsung Q7 Series
+RendererIcon = Samsung-HU9000.png
+
+# ============================================================================
+# This renderer has sent the following string/s:
+#
+# User-Agent: DLNADOC/1.50 SEC_HHP_[TV] Samsung Q7 Series (65)/1.0 UPnP/1.0
+# friendlyName=[TV] Samsung Q7 Series (65)
+# udn=uuid:f3059b57-faea-4981-8cf9-0b60fed86219
+# manufacturer=Samsung Electronics
+# modelName=QE65Q7FAM
+# modelNumber=AllShare1.0
+# modelDescription=Samsung TV DMR
+# manufacturerURL=http://www.samsung.com/sec
+# modelURL=http://www.samsung.com/sec
+# ============================================================================
+# https://www.samsung.com/us/support/answer/ANS00062218/
+# https://www.samsung.com/us/support/owners/product/2017-qled-tv-q7f-series
+# http://downloadcenter.samsung.com/content/UM/201711/20171113111128155/ENG_US_KTMATSCL-3.0.6.pdf
+
+UserAgentSearch = Samsung Q7 Series
+UpnpDetailsSearch = Samsung Q7 Series
+LoadingPriority = 1
+
+TranscodeVideo = MPEGTS-H264-AC3
+TranscodeAudio = WAV
+MaxVideoWidth = 3840
+MaxVideoHeight = 2160
+SupportedVideoBitDepths = 8,10
+H264Level41Limited = false
+SeekByTime = true
+#DLNALocalizationRequired = true
+#AccurateDLNAOrgPN = true
+ChunkedTransfer = true
+SubtitleHttpHeader = CaptionInfo.sec
+PrependTrackNumbers = true
+CharMap = / :
+MediaInfo = true
+
+# Supported video formats:
+Supported = f:3gp|3g2  v:h264|mp4                                          a:aac-lc|he-aac                                     m:video/3gpp
+Supported = f:avi      v:divx|h263|h264|mjpeg|mp4|mpeg1|mpeg2|vc1|vp6|wmv  a:aac-lc|he-aac|ac3|eac3|lpcm|mp3|mpa|wma           
+
+m:video/avi                  gmc:0|1
+Supported = f:divx     v:divx|h263|h264|mjpeg|mp4|mpeg1|mpeg2|vc1|vp6|wmv  a:aac-lc|he-aac|ac3|eac3|lpcm|mp3|mpa|wma           
+
+m:video/x-divx
+Supported = f:flv      v:h263|h264|mp4|vp6                                 a:aac-lc|he-aac|mp3                                 m:video/x-flv
+Supported = f:mkv      v:h264|h265|mp4|mpeg1|mpeg2|vc1|vp6|wmv             a:aac-lc|he-aac|ac3|dts|dtshd|eac3|lpcm|mp3|mpa|wma 
+
+m:video/x-mkv
+Supported = f:mkv      v:h263|h264|h265|mp4|mpeg1|mpeg2|vc1|vp6|wmv        a:vorbis                                            m:video/x-mkv     
+
+           n:2
+Supported = f:mov      v:h263|h264|mjpeg|mp4|mpeg1|mpeg2|vc1|vp6|wmv       a:aac-lc|he-aac|ac3|eac3|lpcm|mp3|mpa|wma           
+
+m:video/quicktime
+Supported = f:mp4      v:h264|h265                                         a:aac-lc|he-aac|ac3|dts|dtshd|eac3|lpcm|mp3|mpa|wma m:video/mpeg
+Supported = f:mpegps   v:mpeg1|mpeg2                                       a:aac-lc|he-aac|ac3|lpcm|mp3|mpa                    m:video/mpeg
+Supported = f:mpegts   v:h264|h265|mp4|mpeg2                               a:aac-lc|he-aac|ac3|dts|dtshd|eac3|lpcm|mp3|mpa|wma 
+
+m:video/vnd.dlna.mpeg-tts
+Supported = f:rm                                                           a:cook                                              m:video/vnd.rn-realvideo
+Supported = f:webm     v:vp8|vp9                                           a:vorbis                                            m:video/webm                 n:2
+Supported = f:wmv|asf  v:mp4|vc1|vp6|wmv                                   a:wma                                               m:video/x-ms-wmv
+
+# Supported audio formats:
+Supported = f:aiff           m:audio/L16
+Supported = f:ape            m:audio/ape
+Supported = f:flac           m:audio/x-flac        n:2
+Supported = f:m4a|alac       m:audio/mp4
+Supported = f:mp3            m:audio/mpeg
+Supported = f:oga            m:audio/ogg
+Supported = f:vorbis         m:audio/vorbis        n:2
+Supported = f:wma            m:audio/x-ms-wma
+Supported = f:wav            m:audio/wav
+
+# Supported subtitles formats:
+SupportedExternalSubtitlesFormats = ASS,MICRODVD,SAMI,SUBRIP,TEXT
+SupportedInternalSubtitlesFormats = DIVX,ASS,SUBRIP,VOBSUB
