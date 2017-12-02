@@ -2594,17 +2594,13 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					}
 
 					if (media.getResolution() != null) {
-						if (
-							player != null &&
-							(
-								mediaRenderer.isKeepAspectRatio() // Need to be looked at, as something seem wrong here
-							)
-						) {
-							addAttribute(sb, "resolution", getResolutionForKeepAR(media.getWidth(), media.getHeight()));
-						} else {
+						if (player == null) {
 							addAttribute(sb, "resolution", media.getResolution());
+//						} else if (media.is4KVideo()) {
+//							addAttribute(sb, "resolution", "1920x1080");
+//						} else if (mediaRenderer.getMaxVideoWidth() > 0 && mediaRenderer.getMaxVideoHeight() > 0) { // Better than to set wrong values, IMO
+//							addAttribute(sb, "resolution", mediaRenderer.getMaxVideoWidth() + "x" + mediaRenderer.getMaxVideoHeight());
 						}
-
 					}
 
 					addAttribute(sb, "bitrate", media.getRealBitrate() / 8);
@@ -2619,7 +2615,11 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
 						}
 					}
-					addAttribute(sb, "colorDepth", media.getVideoBitDepth());
+					if (player == null) {
+						addAttribute(sb, "colorDepth", media.getVideoBitDepth());
+					} else {
+						addAttribute(sb, "colorDepth", "8");
+					}
 				} else if (getFormat() != null && getFormat().isImage()) {
 					if (media != null && media.isMediaparsed()) {
 						wireshark.append(" size=").append(media.getSize());
