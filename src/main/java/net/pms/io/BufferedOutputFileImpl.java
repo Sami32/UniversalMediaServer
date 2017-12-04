@@ -198,7 +198,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 		}
 		this.bufferOverflowWarning = this.maxMemorySize - margin;
 		this.secondread_minsize = params.secondread_minsize;
-		this.timeseek = params.timeseek;
+//		this.timeseek = params.timeseek;
 		this.timeend = params.timeend;
 		this.shiftScr = params.shift_scr;
 		this.hidebuffer = params.hidebuffer;
