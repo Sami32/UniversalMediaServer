@@ -547,10 +547,10 @@ public class LibMediaInfoParser {
 			format = FormatConfiguration.ASF;
 		} else if (
 				value.contains("isom") ||
-				value.startsWith("mp4") && !value.startsWith("mp4a")||
+				value.startsWith("mp4") && !value.startsWith("mp4a") ||
 				value.equals("20") ||
 				value.equals("isml") ||
-				value.startsWith("m4a") ||
+				value.startsWith("m4a") && !value.startsWith("m4ae") ||
 				value.startsWith("m4v") ||
 				value.equals("mpeg-4 visual") ||
 				value.equals("xavc")
@@ -782,7 +782,7 @@ public class LibMediaInfoParser {
 			format = FormatConfiguration.WAV;
 		} else if (value.equals("shorten")) {
 			format = FormatConfiguration.SHORTEN;
-		} else if (value.equals("sls") || value.equals("SLS non-core")) {
+		} else if (value.equals("sls") || value.equals("non-core")) {
 			format = FormatConfiguration.SLS;
 		} else if (value.equals("acelp")) {
 			format = FormatConfiguration.ACELP;
