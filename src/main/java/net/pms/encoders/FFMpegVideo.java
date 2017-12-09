@@ -531,6 +531,8 @@ public class FFMpegVideo extends Player {
 						transcodeOptions.add("libx264");
 					} else {
 						transcodeOptions.add("libx265");
+						transcodeOptions.add("-profile:v");
+						transcodeOptions.add("main");
 					}
 					if (
 						configuration.isDisableSubtitles() &&
@@ -559,9 +561,10 @@ public class FFMpegVideo extends Player {
 						transcodeOptions.add("-level");
 						if (!renderer.isTranscodeToMKV() && !renderer.isTranscodeToH265()) {
 							transcodeOptions.add("31");
-						} else {
+						} else if (!renderer.isTranscodeToH265()) {
 							transcodeOptions.add("40");
-						}
+						} else if (renderer.isTranscodeToH265()) {
+							transcodeOptions.add("51");
 					}
 				}
 				if (!customFFmpegOptions.contains("-pix_fmt")) {
