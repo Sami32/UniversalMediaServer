@@ -754,10 +754,14 @@ public class FFMpegVideo extends Player {
 				videoBitrateOptions.add("-maxrate");
 				if (defaultMaxBitrates[0] > 0 && !params.mediaRenderer.isTranscodeToMPEGPS()) {
 					videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
-				} else if (!params.mediaRenderer.isTranscodeToMPEGPS()) {
+				} else if (!params.mediaRenderer.isTranscodeToMPEGPS() && !params.mediaRenderer.isTranscodeToMKV()) {
 					videoBitrateOptions.add("40M");
+				} else if (params.mediaRenderer.isTranscodeToMKV()) {
+					videoBitrateOptions.add("50M");
 				} else if (params.mediaRenderer.isTranscodeToMPEGPS()) {
 					videoBitrateOptions.add("9800k");
+				} else {
+					videoBitrateOptions.add("20M");
 				}
 			}
 		}
