@@ -756,7 +756,7 @@ public class FFMpegVideo extends Player {
 					videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
 				} else if (!params.mediaRenderer.isTranscodeToMPEGPS() && !params.mediaRenderer.isTranscodeToMKV()) {
 					videoBitrateOptions.add("40M");
-				} else if (params.mediaRenderer.isTranscodeToMKV()) {
+				} else if (params.mediaRenderer.isTranscodeToMKV() && params.mediaRenderer.isTranscodeToDTS()) {
 					videoBitrateOptions.add("50M");
 				} else if (params.mediaRenderer.isTranscodeToMPEGPS()) {
 					videoBitrateOptions.add("9800k");
