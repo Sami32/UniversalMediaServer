@@ -745,12 +745,12 @@ public class FFMpegVideo extends Player {
 				);
 			}
 
-			if (!customFFmpegOptions.contains("-bufsize") && bufSize > 0) {
+			if (!customFFmpegOptions.contains("bufsize") && bufSize > 0) {
 				videoBitrateOptions.add("-bufsize");
 				videoBitrateOptions.add(String.valueOf(bufSize) + "k");
 			}
 
-			if (!customFFmpegOptions.contains("-maxrate") && bufSize > 0) {
+			if (!customFFmpegOptions.contains("maxrate") && bufSize > 0) {
 				videoBitrateOptions.add("-maxrate");
 				if (defaultMaxBitrates[0] > 0 && !params.mediaRenderer.isTranscodeToMPEGPS()) {
 					videoBitrateOptions.add(String.valueOf(defaultMaxBitrates[0]) + "k");
