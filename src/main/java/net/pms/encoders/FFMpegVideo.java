@@ -270,7 +270,7 @@ public class FFMpegVideo extends Player {
 					if (filterChain != null && !filterChain.isEmpty()) {
 						subsFilter.append("[").append(String.valueOf(streamNr)).append(":s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("][video]scale2ref[sub][vid];[vid][sub]overlay[overlayedsub]");
 					} else {
-						subsFilter.append("[").append(String.valueOf(streamNr)).append(":v:0][").append(String.valueOf(streamNr)).append(":s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay[overlayedsub]");
+						subsFilter.append("[").append(String.valueOf(streamNr)).append(":V:0][").append(String.valueOf(streamNr)).append(":s:").append(media.getSubtitleTracksList().indexOf(params.sid)).append("]overlay[overlayedsub]");
 					}
 					isSubsManualTiming = false;
 				} else if (params.sid.isExternal()) {
@@ -278,7 +278,7 @@ public class FFMpegVideo extends Player {
 					videoFilterOptions.add("-i");
 					videoFilterOptions.add(params.sid.getExternalFile().getAbsolutePath());
 					if (filterChain == null || filterChain.isEmpty()) {
-						subsFilter.append("[").append(String.valueOf(streamNr)).append(":v:0][").append(String.valueOf(streamNr + 1)).append(":s]overlay[overlayedsub]"); // this assumes the sub file is single-language
+						subsFilter.append("[").append(String.valueOf(streamNr)).append(":V:0][").append(String.valueOf(streamNr + 1)).append(":s]overlay[overlayedsub]"); // this assumes the sub file is single-language
 					} else {
 						subsFilter.append("[").append(String.valueOf(streamNr + 1)).append(":s:0][video]scale2ref[sub][vid];[vid][sub]overlay[overlayedsub]");
 					}
@@ -596,12 +596,15 @@ public class FFMpegVideo extends Player {
 					transcodeOptions.add("-sn");
 				}
 				transcodeOptions.add("-dn");
+				transcodeOptions.add("-tn");
 				// Output file format
 				transcodeOptions.add("-f");
 				if (dtsRemux) {
 					transcodeOptions.add("mpeg2video");
 				} else if (renderer.isTranscodeToMP4()) {
 					transcodeOptions.add("ismv");
+					// transcodeOptions.add("-map_metadata");
+					// transcodeOptions.add("-1");
 					transcodeOptions.add("-movflags");
 					transcodeOptions.add("isml+frag_keyframe");
 				} else if (renderer.isTranscodeToMPEGTS()) {
@@ -1320,14 +1323,14 @@ public class FFMpegVideo extends Player {
 			} else if (filtergraphend.endsWith("[3D]")) {
 				cmdList.add("[3D]");
 			} else if (params.aid != null) {
-				cmdList.add("0:v:0");
+				cmdList.add("0:V:0");
 			} else if (params.aid == null) {
-				cmdList.add("1:v:0");
+				cmdList.add("1:V:0");
 			}
 		} else if (params.aid != null) {
-			cmdList.add("0:v:0");
+			cmdList.add("0:V:0");
 		} else if (params.aid == null) {
-			cmdList.add("1:v:0");
+			cmdList.add("1:V:0");
 		}
 
 		// Set the proper audio stream
