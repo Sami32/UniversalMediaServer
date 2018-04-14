@@ -333,6 +333,16 @@ Section "Start Menu Shortcuts"
 	CreateShortCut "$SMPROGRAMS\${PROJECT_NAME}.lnk" "$INSTDIR\UMS.exe" "" "$INSTDIR\UMS.exe" 0
 SectionEnd
 
+Section
+	FileOpen $0 "$INSTDIR\win32\tsMuxeR.srt" w
+	FileClose $0
+	nsExec::ExecToStack '$INSTDIR\win32\tsMuxeR.exe "$INSTDIR\win32\tsMuxeR.srt"'
+	Pop $1
+	Pop $0
+	StrCmp $1 "error" 0 +2
+	MessageBox MB_ICONEXCLAMATION "Your tsMuxeR version is not working !"
+SectionEnd
+
 Section "Uninstall"
 	SetShellVarContext all
 
