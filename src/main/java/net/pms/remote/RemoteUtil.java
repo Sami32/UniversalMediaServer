@@ -37,6 +37,7 @@ public class RemoteUtil {
 	//public static final String MIME_TRANS = MIME_MP4;
 	public static final String MIME_TRANS = MIME_OGG;
 	//public static final String MIME_TRANS = MIME_WEBM;
+	public static final String MIME_FLAC = "audio/flac";
 	public static final String MIME_MP3 = "audio/mpeg";
 	public static final String MIME_WAV = "audio/wav";
 	public static final String MIME_PNG = "image/png";
@@ -181,6 +182,7 @@ public class RemoteUtil {
 			(
 				mime.equals(MIME_MP4) ||
 				mime.equals(MIME_WEBM) ||
+				mime.equals(MIME_FLAC) ||
 				mime.equals(MIME_OGG) ||
 				mime.equals(MIME_MP3) ||
 				mime.equals(MIME_PNG) ||
