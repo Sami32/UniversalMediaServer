@@ -109,7 +109,7 @@ public class WebRender extends DeviceConfiguration implements RendererConfigurat
 		configuration.addProperty(MEDIAPARSERV2_THUMB, true);
 		configuration.addProperty(SUPPORTED, "f:flv v:h264|hls a:aac m:video/flash");
 		configuration.addProperty(SUPPORTED, "f:mp4 m:video/mp4");
-		configuration.addProperty(SUPPORTED, "f:flac m:audio/flac");
+		configuration.addProperty(SUPPORTED, "f:flac m:audio/flac"); // Since Chrome 56.0, Firefox 51.0 / Thunderbird 51.0 / SeaMonkey 2.48, Safari 11 and on mobile in Gecko 58.0 (Firefox 58.0 / Thunderbird 58.0 / SeaMonkey)
 		configuration.addProperty(SUPPORTED, "f:mp3 n:2 m:audio/mpeg");
 //		configuration.addProperty(SUPPORTED, "f:wav n:2 m:audio/wav");
 		configuration.addProperty(SUPPORTED, "f:jpg m:image/jpeg");
